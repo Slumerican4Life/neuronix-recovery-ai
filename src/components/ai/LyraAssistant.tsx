@@ -1,8 +1,9 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Brain, MessageCircle, X, Minimize2, Maximize2 } from 'lucide-react';
+import { FeedbackDialog } from './FeedbackDialog';
 
 interface Message {
   id: string;
@@ -17,26 +18,63 @@ export const LyraAssistant: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      text: "Hi! I'm Lyra, your AI recovery assistant. I'm here to guide you through the file recovery process and answer any questions you might have.",
+      text: "Hi! I'm Lyra, your AI recovery assistant. I'm here to guide you through the file recovery process and answer any questions you might have about recovering your lost files.",
       isUser: false,
       timestamp: new Date()
     }
   ]);
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [conversationHistory, setConversationHistory] = useState<Array<{role: string, content: string}>>([]);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const autoResponses = [
-    "Let me help you understand what our AI agents are doing. SENTINEL is analyzing your drive structure, while SPECTRA-X focuses on multimedia files.",
-    "Great question! The recovery process is designed to be as safe as possible - we only read from your drive, never write to it during scanning.",
-    "I can see you're interested in the technical details. Our neural network uses advanced pattern recognition to identify file signatures even when the file system is damaged.",
-    "Don't worry if the scan seems slow - a thorough deep scan ensures we find every possible recoverable file. Quality over speed!",
-    "The damage levels you see (minor, moderate, severe) indicate how much of the original file we can recover. Even 'severe' files often contain valuable data.",
-    "Pro tip: For the best recovery results, avoid using the drive until after the scan completes. This prevents overwriting deleted data.",
-    "I'm analyzing the scan results in real-time. So far, the agents are performing excellently with a high success rate!",
-    "Remember, you can preview files before recovering them. This helps you identify exactly what you want to save."
-  ];
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
-  const handleSendMessage = () => {
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsOpen(true);
+    }, 5000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const sendToLyraAI = async (message: string) => {
+    try {
+      const response = await fetch('https://dvpeahnehnvofjzozmng.functions.supabase.co/lyra-chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message,
+          conversationHistory
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      setConversationHistory(data.conversationHistory || []);
+      return data.response;
+    } catch (error) {
+      console.error('Error calling Lyra AI:', error);
+      return "I'm sorry, I'm having trouble connecting to my AI brain right now. Please try again in a moment, or feel free to ask me anything about file recovery!";
+    }
+  };
+
+  const handleSendMessage = async () => {
     if (!inputText.trim()) return;
 
     const userMessage: Message = {
@@ -50,28 +88,43 @@ export const LyraAssistant: React.FC = () => {
     setInputText('');
     setIsTyping(true);
 
-    // Simulate AI response
-    setTimeout(() => {
-      const randomResponse = autoResponses[Math.floor(Math.random() * autoResponses.length)];
-      const aiMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        text: randomResponse,
-        isUser: false,
-        timestamp: new Date()
-      };
-      setMessages(prev => [...prev, aiMessage]);
-      setIsTyping(false);
-    }, 1000 + Math.random() * 2000);
+    const aiResponse = await sendToLyraAI(inputText);
+
+    const aiMessage: Message = {
+      id: (Date.now() + 1).toString(),
+      text: aiResponse,
+      isUser: false,
+      timestamp: new Date()
+    };
+
+    setMessages(prev => [...prev, aiMessage]);
+    setIsTyping(false);
   };
 
-  useEffect(() => {
-    // Auto-open assistant after 5 seconds
-    const timer = setTimeout(() => {
-      setIsOpen(true);
-    }, 5000);
+  const handleFeedback = async (feedback: string) => {
+    const feedbackMessage = `User feedback for app improvement: ${feedback}`;
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      text: `💡 Suggestion: ${feedback}`,
+      isUser: true,
+      timestamp: new Date()
+    };
 
-    return () => clearTimeout(timer);
-  }, []);
+    setMessages(prev => [...prev, userMessage]);
+    setIsTyping(true);
+
+    const aiResponse = await sendToLyraAI(feedbackMessage);
+
+    const aiMessage: Message = {
+      id: (Date.now() + 1).toString(),
+      text: aiResponse,
+      isUser: false,
+      timestamp: new Date()
+    };
+
+    setMessages(prev => [...prev, aiMessage]);
+    setIsTyping(false);
+  };
 
   if (!isOpen) {
     return (
@@ -130,7 +183,7 @@ export const LyraAssistant: React.FC = () => {
         {!isMinimized && (
           <>
             {/* Messages */}
-            <div className="flex-1 p-4 space-y-3 overflow-y-auto h-64">
+            <div className="flex-1 p-4 space-y-3 overflow-y-auto h-48">
               {messages.map((message) => (
                 <div key={message.id} className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}>
                   <div className={`max-w-xs rounded-lg p-3 ${
@@ -157,10 +210,15 @@ export const LyraAssistant: React.FC = () => {
                   </div>
                 </div>
               )}
+              <div ref={messagesEndRef} />
             </div>
 
-            {/* Input */}
-            <div className="p-4 border-t border-purple-500/30">
+            {/* Input and Feedback */}
+            <div className="p-4 border-t border-purple-500/30 space-y-2">
+              <div className="flex justify-center">
+                <FeedbackDialog onSubmitFeedback={handleFeedback} />
+              </div>
+              
               <div className="flex gap-2">
                 <input
                   type="text"
@@ -174,6 +232,7 @@ export const LyraAssistant: React.FC = () => {
                   onClick={handleSendMessage}
                   size="sm"
                   className="bg-purple-600 hover:bg-purple-700"
+                  disabled={!inputText.trim() || isTyping}
                 >
                   <MessageCircle className="h-4 w-4" />
                 </Button>
