@@ -1,15 +1,20 @@
-
 import React from 'react';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { AuthForm } from '@/components/auth/AuthForm';
 import { FileScanner } from '@/components/scanner/FileScanner';
 import { RecoveryEngine } from '@/components/recovery/RecoveryEngine';
 import { SubscriptionCard } from '@/components/subscription/SubscriptionCard';
+import { AdminDashboard } from '@/components/admin/AdminDashboard';
 import { Button } from '@/components/ui/button';
-import { Brain, Zap, LogOut } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Brain, Zap, LogOut, Settings, Crown } from 'lucide-react';
+import { useUserRole } from '@/hooks/useUserRole';
+import { useState } from 'react';
 
 const Dashboard = () => {
   const { user, signOut } = useAuth();
+  const { role, canManageUsers, loading: roleLoading } = useUserRole();
+  const [showAdminDashboard, setShowAdminDashboard] = useState(false);
 
   const handleSignOut = async () => {
     try {
@@ -18,6 +23,21 @@ const Dashboard = () => {
       console.error('Error signing out:', error);
     }
   };
+
+  if (roleLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
+        <div className="text-center">
+          <Brain className="h-12 w-12 text-purple-400 animate-pulse mx-auto mb-4" />
+          <div className="text-white">Loading your dashboard...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (showAdminDashboard && canManageUsers) {
+    return <AdminDashboard onBack={() => setShowAdminDashboard(false)} />;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
@@ -44,7 +64,32 @@ const Dashboard = () => {
             </div>
             
             <div className="flex items-center gap-4">
+              {role && (
+                <Badge className={
+                  role === 'owner' ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50' :
+                  role === 'manager' ? 'bg-purple-500/20 text-purple-400 border-purple-500/50' :
+                  role === 'admin' ? 'bg-blue-500/20 text-blue-400 border-blue-500/50' :
+                  'bg-gray-500/20 text-gray-400 border-gray-500/50'
+                }>
+                  {role === 'owner' && <Crown className="h-3 w-3 mr-1" />}
+                  {role}
+                </Badge>
+              )}
+              
               <span className="text-slate-300 text-sm hidden sm:block">Welcome, {user?.email}</span>
+              
+              {canManageUsers && (
+                <Button
+                  onClick={() => setShowAdminDashboard(true)}
+                  variant="ghost"
+                  size="sm"
+                  className="text-yellow-400 hover:text-yellow-300 hover:bg-yellow-500/20"
+                >
+                  <Settings className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Admin Dashboard</span>
+                </Button>
+              )}
+              
               <Button
                 onClick={handleSignOut}
                 variant="ghost"

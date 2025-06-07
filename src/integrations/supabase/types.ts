@@ -9,6 +9,156 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      analytics_daily: {
+        Row: {
+          active_users: number | null
+          cancelled_subscriptions: number | null
+          date: string
+          gift_subscriptions_given: number | null
+          id: string
+          new_subscriptions: number | null
+          new_users: number | null
+          revenue: number | null
+          successful_recoveries: number | null
+          total_recoveries: number | null
+        }
+        Insert: {
+          active_users?: number | null
+          cancelled_subscriptions?: number | null
+          date: string
+          gift_subscriptions_given?: number | null
+          id?: string
+          new_subscriptions?: number | null
+          new_users?: number | null
+          revenue?: number | null
+          successful_recoveries?: number | null
+          total_recoveries?: number | null
+        }
+        Update: {
+          active_users?: number | null
+          cancelled_subscriptions?: number | null
+          date?: string
+          gift_subscriptions_given?: number | null
+          id?: string
+          new_subscriptions?: number | null
+          new_users?: number | null
+          revenue?: number | null
+          successful_recoveries?: number | null
+          total_recoveries?: number | null
+        }
+        Relationships: []
+      }
+      audit_logs: {
+        Row: {
+          action: string
+          created_at: string | null
+          details: Json | null
+          id: string
+          ip_address: unknown | null
+          resource_id: string | null
+          resource_type: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          ip_address?: unknown | null
+          resource_id?: string | null
+          resource_type?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          ip_address?: unknown | null
+          resource_id?: string | null
+          resource_type?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      billing_history: {
+        Row: {
+          amount: number | null
+          created_at: string | null
+          currency: string | null
+          description: string | null
+          id: string
+          status: string | null
+          stripe_transaction_id: string | null
+          transaction_type: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          id?: string
+          status?: string | null
+          stripe_transaction_id?: string | null
+          transaction_type: string
+          user_id: string
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          id?: string
+          status?: string | null
+          stripe_transaction_id?: string | null
+          transaction_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      gift_subscriptions: {
+        Row: {
+          created_at: string | null
+          expires_at: string | null
+          gifted_by: string
+          id: string
+          months_gifted: number
+          months_used: number
+          recipient_email: string
+          recipient_user_id: string | null
+          redeemed_at: string | null
+          status: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at?: string | null
+          gifted_by: string
+          id?: string
+          months_gifted?: number
+          months_used?: number
+          recipient_email: string
+          recipient_user_id?: string | null
+          redeemed_at?: string | null
+          status?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string | null
+          gifted_by?: string
+          id?: string
+          months_gifted?: number
+          months_used?: number
+          recipient_email?: string
+          recipient_user_id?: string | null
+          redeemed_at?: string | null
+          status?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -39,37 +189,52 @@ export type Database = {
       recovery_sessions: {
         Row: {
           created_at: string
+          device_type: string | null
+          file_types_recovered: string[] | null
           files_corrupted: number | null
           files_recovered: number | null
           files_scanned: number | null
           id: string
+          recovery_method: string | null
           scan_duration: number | null
           session_name: string
           status: string
+          success_rate: number | null
+          total_size_recovered: number | null
           updated_at: string
           user_id: string
         }
         Insert: {
           created_at?: string
+          device_type?: string | null
+          file_types_recovered?: string[] | null
           files_corrupted?: number | null
           files_recovered?: number | null
           files_scanned?: number | null
           id?: string
+          recovery_method?: string | null
           scan_duration?: number | null
           session_name: string
           status?: string
+          success_rate?: number | null
+          total_size_recovered?: number | null
           updated_at?: string
           user_id: string
         }
         Update: {
           created_at?: string
+          device_type?: string | null
+          file_types_recovered?: string[] | null
           files_corrupted?: number | null
           files_recovered?: number | null
           files_scanned?: number | null
           id?: string
+          recovery_method?: string | null
           scan_duration?: number | null
           session_name?: string
           status?: string
+          success_rate?: number | null
+          total_size_recovered?: number | null
           updated_at?: string
           user_id?: string
         }
@@ -117,18 +282,93 @@ export type Database = {
         }
         Relationships: []
       }
+      support_tickets: {
+        Row: {
+          assigned_to: string | null
+          created_at: string | null
+          id: string
+          message: string
+          priority: string | null
+          status: string | null
+          subject: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          created_at?: string | null
+          id?: string
+          message: string
+          priority?: string | null
+          status?: string | null
+          subject: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          assigned_to?: string | null
+          created_at?: string | null
+          id?: string
+          message?: string
+          priority?: string | null
+          status?: string | null
+          subject?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          assigned_at: string | null
+          assigned_by: string | null
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          assigned_at?: string | null
+          assigned_by?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          assigned_at?: string | null
+          assigned_by?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      gift_subscription_months: {
+        Args: { recipient_email: string; months: number; gifted_by_id?: string }
+        Returns: string
+      }
+      has_role: {
+        Args: {
+          _user_id: string
+          _role: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: boolean
+      }
+      is_admin_user: {
+        Args: { _user_id: string }
+        Returns: boolean
+      }
       reset_monthly_recovery_counts: {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "owner" | "manager" | "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -243,6 +483,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["owner", "manager", "admin", "user"],
+    },
   },
 } as const
