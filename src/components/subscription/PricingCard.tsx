@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -106,8 +107,8 @@ export const PricingCard: React.FC = () => {
                 BEST VALUE - LIMITED TIME
               </Badge>
               <img 
-                src="/lovable-uploads/e68662cf-a01b-41e9-bd2e-928cfd11370e.png" 
-                alt="Lifetime Deal - $39.99"
+                src="/lovable-uploads/6b23e108-ada8-40d9-b1c2-35fe130ff138.png" 
+                alt="Lifetime AI Deal - $39.99"
                 className="absolute top-0 right-0 w-20 h-20 object-contain opacity-90"
               />
             </>

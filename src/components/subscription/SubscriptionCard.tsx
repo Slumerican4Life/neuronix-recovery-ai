@@ -194,8 +194,8 @@ export const SubscriptionCard = () => {
                     : 'border-purple-400 bg-purple-800/30 hover:border-purple-300'
                 }`}>
                   <img 
-                    src="/lovable-uploads/5f3eba1f-325c-453d-b727-90c8d183efcb.png" 
-                    alt="Lifetime Deal"
+                    src="/lovable-uploads/6b23e108-ada8-40d9-b1c2-35fe130ff138.png" 
+                    alt="Lifetime AI Deal"
                     className="absolute top-1 right-1 w-6 h-6 object-contain opacity-80"
                   />
                   <div className="text-lg font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">

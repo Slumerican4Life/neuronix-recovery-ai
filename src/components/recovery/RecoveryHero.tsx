@@ -12,7 +12,7 @@ export const RecoveryHero: React.FC = () => {
           <div className="bg-gradient-to-br from-purple-900/50 via-blue-900/50 to-pink-900/50 rounded-2xl p-8 border border-purple-500/20">
             {/* Your brain + lightning + files image */}
             <img 
-              src="/lovable-uploads/e07aa196-69f0-4312-9bde-b02d32c98398.png" 
+              src="/lovable-uploads/e924ddd2-96a0-4051-a12b-b143448345ee.png" 
               alt="AI Brain with Lightning - File Recovery"
               className="w-32 h-32 mx-auto mb-4 object-contain"
             />
