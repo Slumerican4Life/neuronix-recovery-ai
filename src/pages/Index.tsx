@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { AuthForm } from '@/components/auth/AuthForm';
@@ -11,7 +12,7 @@ import { Brain, Zap, LogOut, Settings, Crown } from 'lucide-react';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useState } from 'react';
 
-const Dashboard = () => {
+const Dashboard: React.FC = () => {
   const { user, signOut } = useAuth();
   const { role, canManageUsers, loading: roleLoading } = useUserRole();
   const [showAdminDashboard, setShowAdminDashboard] = useState(false);
@@ -150,7 +151,7 @@ const Dashboard = () => {
   );
 };
 
-const Index = () => {
+const Index: React.FC = () => {
   return (
     <AuthProvider>
       <AuthContent />
@@ -158,7 +159,7 @@ const Index = () => {
   );
 };
 
-const AuthContent = () => {
+const AuthContent: React.FC = () => {
   const { user, loading } = useAuth();
 
   if (loading) {
