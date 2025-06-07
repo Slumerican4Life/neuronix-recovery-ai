@@ -3,173 +3,190 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { Zap, Brain, FileX } from 'lucide-react';
+import { Brain, Zap, Download, Wrench, CheckCircle, AlertCircle, Cpu } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
-interface RecoveryFile {
-  id: string;
-  fileName: string;
-  originalSize: string;
-  recoveredSize: string;
-  status: 'pending' | 'recovering' | 'recovered' | 'failed';
+interface RecoveryState {
+  status: 'idle' | 'scanning' | 'recovering' | 'complete' | 'error';
   progress: number;
+  filesScanned: number;
+  filesRecovered: number;
+  error?: string;
 }
 
 export const RecoveryEngine = () => {
-  const [isRecovering, setIsRecovering] = useState(false);
-  const [recoveryFiles, setRecoveryFiles] = useState<RecoveryFile[]>([
-    { id: '1', fileName: 'vacation_photos.jpg', originalSize: '2.4 MB', recoveredSize: '0 MB', status: 'pending', progress: 0 },
-    { id: '2', fileName: 'important_document.pdf', originalSize: '856 KB', recoveredSize: '0 MB', status: 'pending', progress: 0 },
-    { id: '3', fileName: 'family_video.mp4', originalSize: '15.2 MB', recoveredSize: '0 MB', status: 'pending', progress: 0 },
-  ]);
-  const [lyraMessage, setLyraMessage] = useState('');
+  const [recoveryState, setRecoveryState] = useState<RecoveryState>({
+    status: 'idle',
+    progress: 0,
+    filesScanned: 0,
+    filesRecovered: 0,
+  });
+  const [isRecovered, setIsRecovered] = useState(false);
   const { toast } = useToast();
 
-  const lyraMessages = [
-    "Initiating recovery protocols... I'm analyzing the data fragments now.",
-    "I've found intact headers for JPEG files. Reconstructing image data...",
-    "PDF structure is partially corrupted, but I can rebuild the document tree.",
-    "Video file recovery is complex, but I'm reassembling the codec streams.",
-    "Recovery complete! I've successfully restored your precious memories.",
-  ];
-
   const startRecovery = async () => {
-    setIsRecovering(true);
-    setLyraMessage(lyraMessages[0]);
+    setRecoveryState({ status: 'scanning', progress: 0, filesScanned: 0, filesRecovered: 0 });
 
-    for (let i = 0; i < recoveryFiles.length; i++) {
-      // Update file status to recovering
-      setRecoveryFiles(prev => prev.map((file, index) => 
-        index === i ? { ...file, status: 'recovering' as const } : file
-      ));
+    // Simulate scanning process
+    const totalFiles = 100;
+    let scanned = 0;
+    let recovered = 0;
 
-      setLyraMessage(lyraMessages[i + 1] || lyraMessages[lyraMessages.length - 1]);
-
-      // Simulate recovery progress
-      for (let progress = 0; progress <= 100; progress += 5) {
-        setRecoveryFiles(prev => prev.map((file, index) => 
-          index === i ? { 
-            ...file, 
-            progress,
-            recoveredSize: progress === 100 ? file.originalSize : `${Math.round(parseFloat(file.originalSize) * progress / 100 * 100) / 100} ${file.originalSize.split(' ')[1]}`
-          } : file
-        ));
-        await new Promise(resolve => setTimeout(resolve, 100));
+    const scanInterval = setInterval(() => {
+      scanned += 1;
+      const isCorrupted = Math.random() < 0.3; // Simulate corruption
+      if (isCorrupted) {
+        recovered += 1;
       }
 
-      // Mark as recovered
-      setRecoveryFiles(prev => prev.map((file, index) => 
-        index === i ? { ...file, status: 'recovered' as const } : file
-      ));
+      const progress = Math.min((scanned / totalFiles) * 100, 100);
+      setRecoveryState(prevState => ({
+        ...prevState,
+        status: 'scanning',
+        progress: progress,
+        filesScanned: scanned,
+        filesRecovered: recovered,
+      }));
 
-      await new Promise(resolve => setTimeout(resolve, 500));
-    }
+      if (scanned >= totalFiles) {
+        clearInterval(scanInterval);
+        setRecoveryState(prevState => ({ ...prevState, status: 'recovering' }));
 
-    setLyraMessage("All files have been successfully recovered and saved to your device!");
-    setIsRecovering(false);
-    
-    toast({
-      title: "Recovery completed successfully!",
-      description: `${recoveryFiles.length} files have been restored`,
-    });
+        // Simulate recovery process
+        setTimeout(() => {
+          setRecoveryState(prevState => ({
+            ...prevState,
+            status: 'complete',
+            progress: 100,
+          }));
+          setIsRecovered(true);
+          toast({
+            title: "Recovery Complete!",
+            description: "Your files have been successfully recovered.",
+          });
+        }, 1500);
+      }
+    }, 50);
   };
 
-  const getStatusColor = (status: RecoveryFile['status']) => {
-    switch (status) {
-      case 'pending': return 'bg-slate-500/20 text-slate-400 border-slate-500/50';
-      case 'recovering': return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50';
-      case 'recovered': return 'bg-green-500/20 text-green-400 border-green-500/50';
-      case 'failed': return 'bg-red-500/20 text-red-400 border-red-500/50';
-    }
+  const handleDownload = () => {
+    toast({
+      title: "Download Started",
+      description: "Your recovered files are being prepared for download.",
+    });
+
+    // Simulate download process
+    setTimeout(() => {
+      toast({
+        title: "Download Complete",
+        description: "Your recovered files have been downloaded successfully.",
+      });
+    }, 2000);
+  };
+  
+  const handleRetry = () => {
+        setRecoveryState({ status: 'idle', progress: 0, filesScanned: 0, filesRecovered: 0 });
+        setIsRecovered(false);
   };
 
   return (
-    <div className="space-y-6">
-      {/* Lyra AI Assistant */}
-      <Card className="bg-gradient-to-r from-purple-900/50 to-pink-900/50 border-purple-500/30 backdrop-blur-xl">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-white">
-            <Brain className="h-6 w-6 text-purple-400" />
-            Lyra AI Assistant
-            <Zap className="h-5 w-5 text-yellow-400 animate-pulse" />
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="bg-slate-800/50 rounded-lg p-4 border border-purple-500/30">
-            <p className="text-purple-200 italic">
-              {lyraMessage || "Hello! I'm Lyra, your AI recovery assistant. I'll guide you through the file recovery process and explain what's happening at each step."}
+    <Card className="bg-slate-800/50 border-purple-500/30 backdrop-blur-xl">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-white">
+          <Wrench className="h-6 w-6 text-purple-400" />
+          Recovery Engine
+        </CardTitle>
+      </CardHeader>
+      
+      <CardContent className="space-y-4">
+        {recoveryState.status === 'idle' && (
+          <div className="text-center">
+            <p className="text-slate-300 mb-4">
+              Initiate the recovery process to restore corrupted or lost files.
             </p>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Recovery Engine */}
-      <Card className="bg-slate-800/50 border-purple-500/30 backdrop-blur-xl">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-white">
-            <Zap className="h-6 w-6 text-yellow-400" />
-            Neural Recovery Engine
-            <FileX className="h-5 w-5 text-red-400" />
-          </CardTitle>
-        </CardHeader>
-        
-        <CardContent className="space-y-6">
-          <div className="flex justify-center">
             <Button
               onClick={startRecovery}
-              disabled={isRecovering}
-              className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white font-semibold py-3 px-8"
+              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold"
             >
-              {isRecovering ? (
-                <>
-                  <Zap className="mr-2 h-4 w-4 animate-pulse" />
-                  Recovering Files...
-                </>
-              ) : (
-                <>
-                  <Zap className="mr-2 h-4 w-4" />
-                  Start Recovery
-                </>
-              )}
+              <Brain className="mr-2 h-4 w-4" />
+              Start Recovery
             </Button>
           </div>
+        )}
 
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-              Recovery Queue ({recoveryFiles.length} files)
-            </h3>
-            
-            <div className="space-y-3">
-              {recoveryFiles.map((file) => (
-                <div key={file.id} className="bg-slate-700/30 rounded-lg p-4 border border-slate-600/50">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="font-medium text-white truncate">{file.fileName}</div>
-                    <Badge className={getStatusColor(file.status)}>
-                      {file.status}
-                    </Badge>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm text-slate-400">
-                      <span>Original: {file.originalSize}</span>
-                      <span>Recovered: {file.recoveredSize}</span>
-                    </div>
-                    
-                    {file.status === 'recovering' && (
-                      <div>
-                        <Progress value={file.progress} className="h-2" />
-                        <div className="text-xs text-slate-400 mt-1 text-center">
-                          {file.progress}% complete
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
+        {recoveryState.status === 'scanning' && (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-slate-300">Scanning for corrupted files...</span>
+              <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/50">
+                {recoveryState.filesScanned} Files
+              </Badge>
+            </div>
+            <Progress value={recoveryState.progress} className="h-2" />
+            <div className="flex justify-between text-sm text-slate-400">
+              <span>{recoveryState.filesRecovered} recovered</span>
+              <span>{recoveryState.filesScanned} scanned</span>
             </div>
           </div>
-        </CardContent>
-      </Card>
-    </div>
+        )}
+
+        {recoveryState.status === 'recovering' && (
+          <div className="text-center">
+            <Cpu className="h-8 w-8 text-blue-400 animate-spin mx-auto mb-3" />
+            <p className="text-slate-300">
+              Finalizing recovery...
+            </p>
+            <Progress value={recoveryState.progress} className="h-2 mt-3" />
+          </div>
+        )}
+
+        {recoveryState.status === 'complete' && isRecovered && (
+          <div className="text-center space-y-4">
+            <CheckCircle className="h-12 w-12 text-green-400 mx-auto" />
+            <h3 className="text-lg font-semibold text-white">Recovery Complete!</h3>
+            <p className="text-slate-300">
+              Successfully recovered {recoveryState.filesRecovered} files.
+            </p>
+            <Button
+              onClick={handleDownload}
+              className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white font-semibold"
+            >
+              <Download className="mr-2 h-4 w-4" />
+              Download Recovered Files
+            </Button>
+          </div>
+        )}
+        
+        {recoveryState.status === 'complete' && !isRecovered && (
+          <div className="text-center space-y-4">
+            <AlertCircle className="h-12 w-12 text-orange-400 mx-auto" />
+            <h3 className="text-lg font-semibold text-white">No Files Recovered</h3>
+            <p className="text-slate-300">
+              No corrupted files were found during the recovery process.
+            </p>
+            <Button
+                onClick={handleRetry}
+                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold"
+            >
+              <Zap className="mr-2 h-4 w-4" />
+              Retry Scan
+            </Button>
+          </div>
+        )}
+
+        {recoveryState.status === 'error' && (
+          <div className="text-center space-y-4">
+            <AlertCircle className="h-12 w-12 text-red-400 mx-auto" />
+            <h3 className="text-lg font-semibold text-white">Recovery Error</h3>
+            <p className="text-slate-300">
+              An error occurred during the recovery process. Please try again.
+            </p>
+            {recoveryState.error && (
+              <p className="text-sm text-red-400">{recoveryState.error}</p>
+            )}
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 };
