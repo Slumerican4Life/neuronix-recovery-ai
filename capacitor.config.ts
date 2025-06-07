@@ -2,11 +2,12 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.neuronix.recovery',
+  appId: 'com.slumbucket.neuronixrecovery',
   appName: 'Neuronix Recovery AI',
   webDir: 'dist',
   server: {
-    androidScheme: 'https'
+    url: 'https://recovery.slumbucket.xyz',
+    cleartext: true
   },
   plugins: {
     SplashScreen: {

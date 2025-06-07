@@ -44,15 +44,15 @@ const Dashboard = () => {
             </div>
             
             <div className="flex items-center gap-4">
-              <span className="text-slate-300 text-sm">Welcome, {user?.email}</span>
+              <span className="text-slate-300 text-sm hidden sm:block">Welcome, {user?.email}</span>
               <Button
                 onClick={handleSignOut}
                 variant="ghost"
                 size="sm"
                 className="text-slate-400 hover:text-white"
               >
-                <LogOut className="h-4 w-4 mr-2" />
-                Sign Out
+                <LogOut className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Sign Out</span>
               </Button>
             </div>
           </div>
@@ -60,20 +60,20 @@ const Dashboard = () => {
       </div>
 
       {/* Main Content */}
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
           {/* Left Column - Scanner and Recovery */}
-          <div className="lg:col-span-2 space-y-8">
+          <div className="lg:col-span-2 space-y-4 sm:space-y-8">
             <FileScanner />
             <RecoveryEngine />
           </div>
           
           {/* Right Column - Subscription */}
-          <div className="space-y-8">
+          <div className="space-y-4 sm:space-y-8">
             <SubscriptionCard />
             
             {/* Stats Card */}
-            <div className="bg-slate-800/50 border-purple-500/30 backdrop-blur-xl rounded-lg p-6">
+            <div className="bg-slate-800/50 border-purple-500/30 backdrop-blur-xl rounded-lg p-4 sm:p-6 border">
               <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                 <Brain className="h-5 w-5 text-purple-400" />
                 Recovery Statistics
@@ -81,19 +81,19 @@ const Dashboard = () => {
               
               <div className="grid grid-cols-2 gap-4">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-green-400">94.7%</div>
+                  <div className="text-xl sm:text-2xl font-bold text-green-400">94.7%</div>
                   <div className="text-xs text-slate-400">Success Rate</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-400">12.3M</div>
+                  <div className="text-xl sm:text-2xl font-bold text-blue-400">12.3M</div>
                   <div className="text-xs text-slate-400">Files Recovered</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-purple-400">847ms</div>
+                  <div className="text-xl sm:text-2xl font-bold text-purple-400">847ms</div>
                   <div className="text-xs text-slate-400">Avg Speed</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-yellow-400">99.9%</div>
+                  <div className="text-xl sm:text-2xl font-bold text-yellow-400">99.9%</div>
                   <div className="text-xs text-slate-400">Uptime</div>
                 </div>
               </div>
