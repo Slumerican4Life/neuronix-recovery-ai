@@ -1,16 +1,15 @@
-
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Label } from '@/components/ui/label';
-import { Scan, Brain, Zap, FileText, Image, Music, Video, AlertTriangle, HardDrive, Search, Filter } from 'lucide-react';
+import { Scan, Brain, Zap } from 'lucide-react';
 import { FileGrid } from './FileGrid';
 import { AgentStatus } from './AgentStatus';
+import { DriveSelection } from './DriveSelection';
+import { ScanTypeSelector } from './ScanTypeSelector';
+import { FileTypeSelector } from './FileTypeSelector';
+import { ScanProgress } from './ScanProgress';
+import { ScannerHero } from './ScannerHero';
 import { useToast } from '@/hooks/use-toast';
 
 interface FileScannerProps {
@@ -41,36 +40,7 @@ export const FileScanner: React.FC<FileScannerProps> = ({ guestMode = false, onL
   const [scanType, setScanType] = useState<'quick' | 'deep' | 'custom'>('quick');
   const [selectedFileTypes, setSelectedFileTypes] = useState<string[]>(['images', 'documents', 'videos']);
   const [customLocation, setCustomLocation] = useState('');
-  const directoryInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
-
-  const fileTypes = [
-    { id: 'images', label: 'Images (JPG, PNG, GIF, WEBP, BMP, TIFF)', icon: Image },
-    { id: 'videos', label: 'Videos (MP4, AVI, MOV, MKV, WMV, FLV)', icon: Video },
-    { id: 'documents', label: 'Documents (PDF, DOC, TXT, RTF, CSV, XLS)', icon: FileText },
-    { id: 'audio', label: 'Audio (MP3, WAV, FLAC, AAC, OGG)', icon: Music },
-    { id: 'archives', label: 'Archives (ZIP, RAR, 7Z, TAR, GZ)', icon: FileText },
-    { id: 'executables', label: 'Programs (EXE, MSI, APK, DMG, DEB)', icon: AlertTriangle },
-    { id: 'iso', label: 'Disk Images (ISO, IMG, BIN, CUE)', icon: HardDrive },
-  ];
-
-  const requestDirectoryAccess = async () => {
-    try {
-      if ('showDirectoryPicker' in window) {
-        // @ts-ignore - File System Access API
-        const dirHandle = await window.showDirectoryPicker();
-        setCustomLocation(dirHandle.name);
-        return dirHandle;
-      } else {
-        // Fallback for browsers without File System Access API
-        directoryInputRef.current?.click();
-        return null;
-      }
-    } catch (error) {
-      console.error('Directory access denied:', error);
-      return null;
-    }
-  };
 
   const generateThumbnail = async (file: File): Promise<string | undefined> => {
     if (!file.type.startsWith('image/')) return undefined;
@@ -78,7 +48,7 @@ export const FileScanner: React.FC<FileScannerProps> = ({ guestMode = false, onL
     return new Promise((resolve) => {
       const reader = new FileReader();
       reader.onload = (e) => {
-        const img = new Image();
+        const img = document.createElement('img');
         img.onload = () => {
           const canvas = document.createElement('canvas');
           const ctx = canvas.getContext('2d');
@@ -161,7 +131,6 @@ export const FileScanner: React.FC<FileScannerProps> = ({ guestMode = false, onL
             });
           }
         } else if (entry.kind === 'directory' && scanType === 'deep') {
-          // Only scan subdirectories in deep scan mode
           const subDirHandle = await dirHandle.getDirectoryHandle(entry.name);
           await scanDirectoryRecursively(subDirHandle, currentPath, foundFiles);
         }
@@ -171,6 +140,22 @@ export const FileScanner: React.FC<FileScannerProps> = ({ guestMode = false, onL
     }
     
     return foundFiles;
+  };
+
+  const requestDirectoryAccess = async () => {
+    try {
+      if ('showDirectoryPicker' in window) {
+        // @ts-ignore - File System Access API
+        const dirHandle = await window.showDirectoryPicker();
+        setCustomLocation(dirHandle.name);
+        return dirHandle;
+      } else {
+        return null;
+      }
+    } catch (error) {
+      console.error('Directory access denied:', error);
+      return null;
+    }
   };
 
   const handleScan = async () => {
@@ -195,7 +180,6 @@ export const FileScanner: React.FC<FileScannerProps> = ({ guestMode = false, onL
     setScanMessage('Initializing AI agents...');
 
     try {
-      // Show real scanning progress
       const scanSteps = [
         { progress: 5, message: 'SENTINEL: Starting file system analysis...', delay: 800 },
         { progress: 15, message: 'SENTINEL: Scanning partition tables and file allocation...', delay: 1200 },
@@ -207,7 +191,6 @@ export const FileScanner: React.FC<FileScannerProps> = ({ guestMode = false, onL
         { progress: 95, message: 'SENTINEL: Finalizing recovery candidates...', delay: 600 }
       ];
 
-      // If we have directory access, scan real files
       if (dirHandle || (scanType === 'custom' && customLocation)) {
         setScanMessage('Accessing selected directory...');
         setProgress(10);
@@ -217,7 +200,6 @@ export const FileScanner: React.FC<FileScannerProps> = ({ guestMode = false, onL
           foundFiles = await scanDirectoryRecursively(dirHandle);
         }
         
-        // Simulate realistic scanning time even with real files
         for (const step of scanSteps) {
           await new Promise(resolve => setTimeout(resolve, step.delay));
           setProgress(step.progress);
@@ -235,7 +217,6 @@ export const FileScanner: React.FC<FileScannerProps> = ({ guestMode = false, onL
             : "No recoverable files found in the selected location",
         });
       } else {
-        // Fallback simulation for drive scanning (browser limitations)
         setScanMessage('Note: Browser security limits prevent direct drive access. Using directory selection...');
         setProgress(50);
         
@@ -298,14 +279,9 @@ export const FileScanner: React.FC<FileScannerProps> = ({ guestMode = false, onL
     });
   };
 
-  const [drives] = useState([
-    { id: 'C:', label: 'Local Disk (C:)', size: '500 GB', type: 'SSD' },
-    { id: 'D:', label: 'Data Drive (D:)', size: '1 TB', type: 'HDD' },
-    { id: 'E:', label: 'USB Drive (E:)', size: '32 GB', type: 'USB' },
-  ]);
-
   return (
     <Card className="bg-black/40 border-purple-500/30 backdrop-blur-xl relative overflow-hidden">
+      {/* Background pattern */}
       <div className="absolute inset-0 opacity-20" style={{
         backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3CradialGradient id='marble3'%3E%3Cstop offset='0%25' style='stop-color:%23440044;stop-opacity:0.8'/%3E%3Cstop offset='100%25' style='stop-color:%23220022;stop-opacity:0.4'/%3E%3C/radialGradient%3E%3C/defs%3E%3Crect width='100' height='100' fill='url(%23marble3)'/%3E%3C/svg%3E")`,
         backgroundSize: '150px 150px'
@@ -320,132 +296,27 @@ export const FileScanner: React.FC<FileScannerProps> = ({ guestMode = false, onL
       </CardHeader>
       
       <CardContent className="space-y-6 relative z-10">
-        {/* Hero Image Area with your uploaded brain + lightning image */}
-        {scannedFiles.length === 0 && !isScanning && (
-          <div className="text-center py-8">
-            <div className="bg-gradient-to-br from-purple-900/50 via-blue-900/50 to-pink-900/50 rounded-2xl p-8 border border-purple-500/20 max-w-md mx-auto">
-              <img 
-                src="/lovable-uploads/c1457356-288e-4990-bc1e-df48365a9afe.png" 
-                alt="AI Brain with Lightning"
-                className="w-32 h-32 mx-auto mb-4 object-contain"
-              />
-              
-              <h3 className="text-xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-red-400 bg-clip-text text-transparent mb-2">
-                AI-Powered Recovery
-              </h3>
-              <p className="text-gray-300 text-sm">
-                Start scanning to discover recoverable files with our advanced neural network
-              </p>
-            </div>
-          </div>
-        )}
+        {scannedFiles.length === 0 && !isScanning && <ScannerHero />}
 
-        {/* Drive Selection */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-2 text-white font-medium">
-            <HardDrive className="h-4 w-4 text-blue-400" />
-            Drive Selection
-          </div>
-          <Select value={selectedDrive} onValueChange={setSelectedDrive}>
-            <SelectTrigger className="bg-black/60 border-gray-600 text-white">
-              <SelectValue placeholder="Select drive to scan" />
-            </SelectTrigger>
-            <SelectContent className="bg-black border-gray-600">
-              {drives.map(drive => (
-                <SelectItem key={drive.id} value={drive.id} className="text-white">
-                  {drive.label} - {drive.size} ({drive.type})
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        <DriveSelection 
+          selectedDrive={selectedDrive} 
+          onDriveChange={setSelectedDrive} 
+        />
 
-        {/* Scan Type */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-2 text-white font-medium">
-            <Search className="h-4 w-4 text-purple-400" />
-            Scan Type
-          </div>
-          <RadioGroup value={scanType} onValueChange={(value: any) => setScanType(value)}>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="quick" id="quick" />
-              <Label htmlFor="quick" className="text-white">Quick Scan (5-10 minutes) - Recently deleted files</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="deep" id="deep" />
-              <Label htmlFor="deep" className="text-white">Deep Scan (30-60 minutes) - Complete drive analysis</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="custom" id="custom" />
-              <Label htmlFor="custom" className="text-white">Custom Location - Specific folder scan</Label>
-            </div>
-          </RadioGroup>
+        <ScanTypeSelector
+          scanType={scanType}
+          onScanTypeChange={setScanType}
+          customLocation={customLocation}
+          onCustomLocationChange={setCustomLocation}
+        />
 
-          {scanType === 'custom' && (
-            <div className="mt-2">
-              <Button
-                onClick={requestDirectoryAccess}
-                variant="outline"
-                className="bg-black/60 border-gray-600 text-white hover:bg-gray-800"
-              >
-                {customLocation ? `Selected: ${customLocation}` : 'Choose Folder...'}
-              </Button>
-              <input
-                ref={directoryInputRef}
-                type="file"
-                // @ts-ignore
-                webkitdirectory="true"
-                directory="true"
-                multiple
-                className="hidden"
-                onChange={(e) => {
-                  if (e.target.files && e.target.files[0]) {
-                    setCustomLocation(e.target.files[0].webkitRelativePath.split('/')[0]);
-                  }
-                }}
-              />
-            </div>
-          )}
-        </div>
+        <FileTypeSelector
+          selectedFileTypes={selectedFileTypes}
+          onFileTypesChange={setSelectedFileTypes}
+        />
 
-        {/* File Type Selection */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-2 text-white font-medium">
-            <Filter className="h-4 w-4 text-pink-400" />
-            File Types to Recover
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {fileTypes.map(type => (
-              <div key={type.id} className="flex items-center space-x-2">
-                <Checkbox
-                  id={type.id}
-                  checked={selectedFileTypes.includes(type.id)}
-                  onCheckedChange={(checked) => {
-                    if (checked) {
-                      setSelectedFileTypes([...selectedFileTypes, type.id]);
-                    } else {
-                      setSelectedFileTypes(selectedFileTypes.filter(t => t !== type.id));
-                    }
-                  }}
-                />
-                <Label htmlFor={type.id} className="text-white text-sm flex items-center gap-2">
-                  <type.icon className="h-4 w-4 text-gray-400" />
-                  {type.label}
-                </Label>
-              </div>
-            ))}
-          </div>
-        </div>
+        <ScanProgress progress={progress} message={scanMessage} />
 
-        {/* Scan Progress */}
-        <div className="space-y-2">
-          <div className="text-gray-300">
-            {scanMessage}
-          </div>
-          <Progress value={progress} className="h-2" />
-        </div>
-
-        {/* Scan Button */}
         <Button
           onClick={handleScan}
           disabled={isScanning || selectedFileTypes.length === 0}
@@ -464,10 +335,8 @@ export const FileScanner: React.FC<FileScannerProps> = ({ guestMode = false, onL
           )}
         </Button>
 
-        {/* Agent Status */}
         {isScanning && <AgentStatus />}
 
-        {/* Scanned Files */}
         {scannedFiles.length > 0 && (
           <div className="space-y-4">
             <div className="flex items-center justify-between">

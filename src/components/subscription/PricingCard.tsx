@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -8,7 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 
 export const PricingCard: React.FC = () => {
-  const [isLifetime, setIsLifetime] = useState(true); // Default to lifetime for prominence
+  const [isLifetime, setIsLifetime] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -59,7 +58,6 @@ export const PricingCard: React.FC = () => {
     if (isLifetime) {
       createCheckoutSession('price_1RXRl5EEqiDDPmsdmZH4XpAW', true);
     } else {
-      // Use your monthly price ID here
       createCheckoutSession('price_monthly_id_here', false);
     }
   };
@@ -99,7 +97,7 @@ export const PricingCard: React.FC = () => {
           </div>
         </div>
 
-        {/* Enhanced Pricing Header with Your Image for Lifetime */}
+        {/* Enhanced Pricing Header with Your Lifetime Image */}
         <div className="text-center relative">
           {isLifetime && (
             <>
@@ -108,9 +106,9 @@ export const PricingCard: React.FC = () => {
                 BEST VALUE - LIMITED TIME
               </Badge>
               <img 
-                src="/lovable-uploads/5f3eba1f-325c-453d-b727-90c8d183efcb.png" 
-                alt="Lifetime Deal"
-                className="absolute top-0 right-0 w-16 h-16 object-contain opacity-80"
+                src="/lovable-uploads/e68662cf-a01b-41e9-bd2e-928cfd11370e.png" 
+                alt="Lifetime Deal - $39.99"
+                className="absolute top-0 right-0 w-20 h-20 object-contain opacity-90"
               />
             </>
           )}

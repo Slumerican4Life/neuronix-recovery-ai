@@ -7,12 +7,12 @@ export const RecoveryHero: React.FC = () => {
   return (
     <Card className="bg-black/40 border border-purple-500/30 backdrop-blur-xl p-8 text-center">
       <div className="space-y-6">
-        {/* Hero Image Area with your uploaded brain image */}
+        {/* Hero Image Area with your updated brain image */}
         <div className="relative mx-auto max-w-md">
           <div className="bg-gradient-to-br from-purple-900/50 via-blue-900/50 to-pink-900/50 rounded-2xl p-8 border border-purple-500/20">
-            {/* Your brain + lightning image */}
+            {/* Your brain + lightning + files image */}
             <img 
-              src="/lovable-uploads/c1457356-288e-4990-bc1e-df48365a9afe.png" 
+              src="/lovable-uploads/e07aa196-69f0-4312-9bde-b02d32c98398.png" 
               alt="AI Brain with Lightning - File Recovery"
               className="w-32 h-32 mx-auto mb-4 object-contain"
             />
