@@ -1,10 +1,9 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { Zap, Brain, FileX, Lightning } from 'lucide-react';
+import { Zap, Brain, FileX } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface RecoveryFile {
@@ -92,7 +91,7 @@ export const RecoveryEngine = () => {
           <CardTitle className="flex items-center gap-2 text-white">
             <Brain className="h-6 w-6 text-purple-400" />
             Lyra AI Assistant
-            <Lightning className="h-5 w-5 text-yellow-400 animate-pulse" />
+            <Zap className="h-5 w-5 text-yellow-400 animate-pulse" />
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -123,7 +122,7 @@ export const RecoveryEngine = () => {
             >
               {isRecovering ? (
                 <>
-                  <Lightning className="mr-2 h-4 w-4 animate-pulse" />
+                  <Zap className="mr-2 h-4 w-4 animate-pulse" />
                   Recovering Files...
                 </>
               ) : (

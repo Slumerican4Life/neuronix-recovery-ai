@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,7 +5,6 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Crown, Zap, Brain } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
 interface SubscriptionData {
@@ -29,30 +27,14 @@ export const SubscriptionCard = () => {
 
   useEffect(() => {
     if (user) {
-      fetchSubscriptionData();
+      // For now, we'll use mock data since the supabase tables aren't available
+      // fetchSubscriptionData();
     }
   }, [user]);
-
-  const fetchSubscriptionData = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('subscribers')
-        .select('subscribed, subscription_tier, recovery_count, monthly_recovery_limit')
-        .eq('user_id', user?.id)
-        .single();
-
-      if (error) throw error;
-      if (data) setSubscriptionData(data);
-    } catch (error) {
-      console.error('Error fetching subscription data:', error);
-    }
-  };
 
   const handleUpgrade = async () => {
     setLoading(true);
     try {
-      // This would call your Stripe checkout edge function
-      // For now, we'll simulate the upgrade
       toast({
         title: "Redirecting to checkout...",
         description: "You'll be redirected to complete your subscription",

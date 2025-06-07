@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { Zap, Brain, FileX, Lightning } from 'lucide-react';
+import { Zap, Brain, FileX } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface ScanResult {
@@ -87,7 +87,7 @@ export const FileScanner = () => {
         <CardTitle className="flex items-center gap-2 text-white">
           <Brain className="h-6 w-6 text-purple-400" />
           Neural File Scanner
-          <Lightning className="h-5 w-5 text-yellow-400" />
+          <Zap className="h-5 w-5 text-yellow-400" />
         </CardTitle>
       </CardHeader>
       
