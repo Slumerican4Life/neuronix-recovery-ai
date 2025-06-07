@@ -29,19 +29,19 @@ interface FileGridProps {
 
 export const FileGrid: React.FC<FileGridProps> = ({ files, onFileToggle, guestMode = false }) => {
   const getFileIcon = (type: string) => {
-    if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'tiff'].includes(type.toLowerCase())) {
+    if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'tiff', 'raw', 'cr2', 'nef'].includes(type.toLowerCase())) {
       return Image;
     }
-    if (['mp4', 'avi', 'mov', 'mkv', 'wmv', 'flv', 'webm'].includes(type.toLowerCase())) {
+    if (['mp4', 'avi', 'mov', 'mkv', 'wmv', 'flv', 'webm', 'm4v', '3gp'].includes(type.toLowerCase())) {
       return Video;
     }
-    if (['mp3', 'wav', 'flac', 'aac', 'ogg', 'wma'].includes(type.toLowerCase())) {
+    if (['mp3', 'wav', 'flac', 'aac', 'ogg', 'wma', 'm4a'].includes(type.toLowerCase())) {
       return Music;
     }
-    if (['zip', 'rar', '7z', 'tar', 'gz'].includes(type.toLowerCase())) {
+    if (['zip', 'rar', '7z', 'tar', 'gz', 'bz2'].includes(type.toLowerCase())) {
       return Archive;
     }
-    if (['exe', 'msi', 'apk', 'dmg', 'deb'].includes(type.toLowerCase())) {
+    if (['exe', 'msi', 'apk', 'dmg', 'deb', 'rpm'].includes(type.toLowerCase())) {
       return AlertTriangle;
     }
     return FileText;
@@ -57,6 +57,16 @@ export const FileGrid: React.FC<FileGridProps> = ({ files, onFileToggle, guestMo
     }
   };
 
+  const getDamageLabel = (damage: string) => {
+    switch (damage) {
+      case 'none': return 'Perfect';
+      case 'minor': return 'Good';
+      case 'moderate': return 'Fair';
+      case 'severe': return 'Poor';
+      default: return 'Unknown';
+    }
+  };
+
   const getAgentColor = (agent: string) => {
     switch (agent) {
       case 'SENTINEL': return 'bg-blue-500/20 text-blue-400 border-blue-500/50';
@@ -68,7 +78,6 @@ export const FileGrid: React.FC<FileGridProps> = ({ files, onFileToggle, guestMo
 
   const handlePreview = (file: ScannedFile) => {
     if (file.file && file.thumbnail) {
-      // Create a modal or new window to show the file preview
       const newWindow = window.open('', '_blank');
       if (newWindow) {
         newWindow.document.write(`
@@ -79,6 +88,7 @@ export const FileGrid: React.FC<FileGridProps> = ({ files, onFileToggle, guestMo
               <p><strong>Name:</strong> ${file.name}</p>
               <p><strong>Size:</strong> ${formatBytes(file.size)}</p>
               <p><strong>Type:</strong> ${file.type.toUpperCase()}</p>
+              <p><strong>Last Modified:</strong> ${file.lastModified ? new Date(file.lastModified).toLocaleString() : 'Unknown'}</p>
               ${file.thumbnail ? `<img src="${file.thumbnail}" style="max-width:100%;height:auto;border:1px solid #333;"/>` : ''}
             </body>
           </html>
@@ -96,8 +106,8 @@ export const FileGrid: React.FC<FileGridProps> = ({ files, onFileToggle, guestMo
       {guestMode && (
         <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
           <p className="text-blue-400 text-sm">
-            Free trial: {selectedCount}/{freeLimit} files selected for recovery.
-            {!canSelectMore && " Upgrade for unlimited recovery."}
+            Free trial: {selectedCount}/{freeLimit} files selected for download.
+            {!canSelectMore && " Upgrade for unlimited file processing."}
           </p>
         </div>
       )}
@@ -110,7 +120,6 @@ export const FileGrid: React.FC<FileGridProps> = ({ files, onFileToggle, guestMo
           return (
             <Card key={file.id} className="bg-black/60 border-gray-600 p-3 hover:border-purple-500/50 transition-colors">
               <div className="space-y-2">
-                {/* File Preview/Icon - Small 64px thumbnail */}
                 <div className="relative">
                   {file.thumbnail && isImage ? (
                     <img
@@ -124,7 +133,6 @@ export const FileGrid: React.FC<FileGridProps> = ({ files, onFileToggle, guestMo
                     </div>
                   )}
                   
-                  {/* Preview Button */}
                   <Button
                     size="sm"
                     variant="ghost"
@@ -135,7 +143,6 @@ export const FileGrid: React.FC<FileGridProps> = ({ files, onFileToggle, guestMo
                   </Button>
                 </div>
 
-                {/* File Info */}
                 <div className="space-y-1">
                   <div>
                     <h4 className="text-white text-xs font-medium truncate" title={file.name}>
@@ -149,17 +156,15 @@ export const FileGrid: React.FC<FileGridProps> = ({ files, onFileToggle, guestMo
                     </p>
                   </div>
 
-                  {/* Badges */}
                   <div className="flex flex-wrap gap-1">
                     <Badge className={`${getDamageColor(file.damage)} text-xs`} variant="outline">
-                      {file.damage === 'none' ? 'Perfect' : file.damage}
+                      {getDamageLabel(file.damage)}
                     </Badge>
                     <Badge className={`${getAgentColor(file.agent)} text-xs`} variant="outline">
                       {file.agent}
                     </Badge>
                   </div>
 
-                  {/* Selection Checkbox */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-1">
                       <Checkbox
@@ -172,7 +177,7 @@ export const FileGrid: React.FC<FileGridProps> = ({ files, onFileToggle, guestMo
                         disabled={!file.recovered && !canSelectMore}
                       />
                       <label htmlFor={file.id} className="text-white text-xs">
-                        Recover
+                        Select
                       </label>
                     </div>
 
