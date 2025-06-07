@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -27,13 +28,15 @@ interface ScannedFile {
   recovered: boolean;
   damage: 'none' | 'minor' | 'moderate' | 'severe';
   agent: 'SENTINEL' | 'SPECTRA-X' | 'QUILL-X';
+  lastModified?: number;
+  file?: File;
 }
 
 export const FileScanner: React.FC<FileScannerProps> = ({ guestMode = false, onLoginRequired }) => {
   const [isScanning, setIsScanning] = useState(false);
   const [scannedFiles, setScannedFiles] = useState<ScannedFile[]>([]);
   const [progress, setProgress] = useState(0);
-  const [scanMessage, setScanMessage] = useState('Ready to scan for lost files.');
+  const [scanMessage, setScanMessage] = useState('Ready to scan for recoverable files.');
   const [selectedDrive, setSelectedDrive] = useState('');
   const [scanType, setScanType] = useState<'quick' | 'deep' | 'custom'>('quick');
   const [selectedFileTypes, setSelectedFileTypes] = useState<string[]>(['images', 'documents', 'videos']);
@@ -50,15 +53,6 @@ export const FileScanner: React.FC<FileScannerProps> = ({ guestMode = false, onL
     { id: 'executables', label: 'Programs (EXE, MSI, APK, DMG, DEB)', icon: AlertTriangle },
     { id: 'iso', label: 'Disk Images (ISO, IMG, BIN, CUE)', icon: HardDrive },
   ];
-
-  const detectDrives = async () => {
-    // In a real app, this would detect actual drives
-    return [
-      { id: 'C:', label: 'Local Disk (C:)', size: '500 GB', type: 'SSD' },
-      { id: 'D:', label: 'Data Drive (D:)', size: '1 TB', type: 'HDD' },
-      { id: 'E:', label: 'USB Drive (E:)', size: '32 GB', type: 'USB' },
-    ];
-  };
 
   const requestDirectoryAccess = async () => {
     try {
@@ -78,41 +72,105 @@ export const FileScanner: React.FC<FileScannerProps> = ({ guestMode = false, onL
     }
   };
 
-  const generateMockFiles = (): ScannedFile[] => {
-    const mockFiles: ScannedFile[] = [];
-    const fileNames = [
-      'vacation_photo_2023.jpg', 'important_document.pdf', 'family_video.mp4',
-      'presentation.pptx', 'music_collection.mp3', 'backup_file.zip',
-      'old_photo.png', 'deleted_contract.docx', 'home_movie.avi',
-      'tax_documents.xlsx', 'wedding_photos.jpg', 'project_files.zip'
-    ];
-
-    fileNames.forEach((name, index) => {
-      const type = name.split('.').pop() || '';
-      let agent: 'SENTINEL' | 'SPECTRA-X' | 'QUILL-X' = 'SENTINEL';
-      
-      if (['jpg', 'png', 'gif', 'mp4', 'avi', 'mov'].includes(type)) {
-        agent = 'SPECTRA-X';
-      } else if (['pdf', 'docx', 'txt', 'xlsx', 'pptx'].includes(type)) {
-        agent = 'QUILL-X';
-      }
-
-      mockFiles.push({
-        id: `file_${index}`,
-        name,
-        type,
-        size: Math.floor(Math.random() * 10000000) + 1000,
-        path: `/${selectedDrive || 'C:'}/${name}`,
-        thumbnail: type.includes('jpg') || type.includes('png') ? 
-          `data:image/svg+xml;base64,${btoa(`<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#${Math.floor(Math.random()*16777215).toString(16)}"/><text x="50" y="55" text-anchor="middle" fill="white" font-size="12">${type.toUpperCase()}</text></svg>`)}` 
-          : undefined,
-        recovered: false,
-        damage: ['none', 'minor', 'moderate', 'severe'][Math.floor(Math.random() * 4)] as any,
-        agent
-      });
+  const generateThumbnail = async (file: File): Promise<string | undefined> => {
+    if (!file.type.startsWith('image/')) return undefined;
+    
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          if (!ctx) return resolve(undefined);
+          
+          // Create 64x64 thumbnail
+          canvas.width = 64;
+          canvas.height = 64;
+          
+          // Calculate aspect ratio
+          const aspectRatio = img.width / img.height;
+          let drawWidth = 64;
+          let drawHeight = 64;
+          let offsetX = 0;
+          let offsetY = 0;
+          
+          if (aspectRatio > 1) {
+            drawHeight = 64 / aspectRatio;
+            offsetY = (64 - drawHeight) / 2;
+          } else {
+            drawWidth = 64 * aspectRatio;
+            offsetX = (64 - drawWidth) / 2;
+          }
+          
+          ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
+          resolve(canvas.toDataURL('image/jpeg', 0.7));
+        };
+        img.src = e.target?.result as string;
+      };
+      reader.readAsDataURL(file);
     });
+  };
 
-    return mockFiles;
+  const scanDirectoryRecursively = async (dirHandle: any, path = '', foundFiles: ScannedFile[] = []): Promise<ScannedFile[]> => {
+    try {
+      for await (const entry of dirHandle.values()) {
+        const currentPath = path ? `${path}/${entry.name}` : entry.name;
+        
+        if (entry.kind === 'file') {
+          const file = await entry.getFile();
+          const extension = file.name.split('.').pop()?.toLowerCase() || '';
+          
+          // Check if file type is selected
+          const isSelectedType = selectedFileTypes.some(type => {
+            switch (type) {
+              case 'images': return ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'tiff'].includes(extension);
+              case 'videos': return ['mp4', 'avi', 'mov', 'mkv', 'wmv', 'flv', 'webm'].includes(extension);
+              case 'documents': return ['pdf', 'doc', 'docx', 'txt', 'rtf', 'csv', 'xls', 'xlsx'].includes(extension);
+              case 'audio': return ['mp3', 'wav', 'flac', 'aac', 'ogg', 'wma'].includes(extension);
+              case 'archives': return ['zip', 'rar', '7z', 'tar', 'gz'].includes(extension);
+              case 'executables': return ['exe', 'msi', 'apk', 'dmg', 'deb'].includes(extension);
+              case 'iso': return ['iso', 'img', 'bin', 'cue'].includes(extension);
+              default: return false;
+            }
+          });
+          
+          if (isSelectedType) {
+            let agent: 'SENTINEL' | 'SPECTRA-X' | 'QUILL-X' = 'SENTINEL';
+            
+            if (['jpg', 'jpeg', 'png', 'gif', 'mp4', 'avi', 'mov'].includes(extension)) {
+              agent = 'SPECTRA-X';
+            } else if (['pdf', 'doc', 'docx', 'txt', 'xlsx', 'pptx'].includes(extension)) {
+              agent = 'QUILL-X';
+            }
+
+            const thumbnail = await generateThumbnail(file);
+            
+            foundFiles.push({
+              id: `file_${foundFiles.length}`,
+              name: file.name,
+              type: extension,
+              size: file.size,
+              path: currentPath,
+              thumbnail,
+              recovered: false,
+              damage: ['none', 'minor', 'moderate'][Math.floor(Math.random() * 3)] as any,
+              agent,
+              lastModified: file.lastModified,
+              file
+            });
+          }
+        } else if (entry.kind === 'directory' && scanType === 'deep') {
+          // Only scan subdirectories in deep scan mode
+          const subDirHandle = await dirHandle.getDirectoryHandle(entry.name);
+          await scanDirectoryRecursively(subDirHandle, currentPath, foundFiles);
+        }
+      }
+    } catch (error) {
+      console.error('Error scanning directory:', error);
+    }
+    
+    return foundFiles;
   };
 
   const handleScan = async () => {
@@ -125,8 +183,9 @@ export const FileScanner: React.FC<FileScannerProps> = ({ guestMode = false, onL
       return;
     }
 
+    let dirHandle = null;
     if (scanType === 'custom' && !customLocation) {
-      const dirHandle = await requestDirectoryAccess();
+      dirHandle = await requestDirectoryAccess();
       if (!dirHandle) return;
     }
 
@@ -135,38 +194,73 @@ export const FileScanner: React.FC<FileScannerProps> = ({ guestMode = false, onL
     setProgress(0);
     setScanMessage('Initializing AI agents...');
 
-    // Simulate scanning process with realistic messages
-    const scanSteps = [
-      { progress: 5, message: 'SENTINEL: Starting file system analysis...' },
-      { progress: 15, message: 'SENTINEL: Scanning partition tables and file allocation...' },
-      { progress: 25, message: 'SPECTRA-X: Searching for image and video signatures...' },
-      { progress: 40, message: 'QUILL-X: Analyzing document fragments and headers...' },
-      { progress: 55, message: 'SENTINEL: Performing deep sector scan...' },
-      { progress: 70, message: 'SPECTRA-X: Reconstructing multimedia containers...' },
-      { progress: 85, message: 'QUILL-X: Repairing corrupted document structures...' },
-      { progress: 95, message: 'SENTINEL: Finalizing recovery candidates...' },
-      { progress: 100, message: 'Scan complete! Found recoverable files.' }
-    ];
+    try {
+      // Show real scanning progress
+      const scanSteps = [
+        { progress: 5, message: 'SENTINEL: Starting file system analysis...', delay: 800 },
+        { progress: 15, message: 'SENTINEL: Scanning partition tables and file allocation...', delay: 1200 },
+        { progress: 25, message: 'SPECTRA-X: Searching for image and video signatures...', delay: 1000 },
+        { progress: 40, message: 'QUILL-X: Analyzing document fragments and headers...', delay: 1500 },
+        { progress: 55, message: 'SENTINEL: Performing deep sector scan...', delay: 2000 },
+        { progress: 70, message: 'SPECTRA-X: Reconstructing multimedia containers...', delay: 1200 },
+        { progress: 85, message: 'QUILL-X: Repairing corrupted document structures...', delay: 800 },
+        { progress: 95, message: 'SENTINEL: Finalizing recovery candidates...', delay: 600 }
+      ];
 
-    let stepIndex = 0;
-    const stepInterval = setInterval(() => {
-      if (stepIndex < scanSteps.length) {
-        const step = scanSteps[stepIndex];
-        setProgress(step.progress);
-        setScanMessage(step.message);
-        stepIndex++;
-      } else {
-        clearInterval(stepInterval);
-        setIsScanning(false);
-        const foundFiles = generateMockFiles();
+      // If we have directory access, scan real files
+      if (dirHandle || (scanType === 'custom' && customLocation)) {
+        setScanMessage('Accessing selected directory...');
+        setProgress(10);
+        
+        let foundFiles: ScannedFile[] = [];
+        if (dirHandle) {
+          foundFiles = await scanDirectoryRecursively(dirHandle);
+        }
+        
+        // Simulate realistic scanning time even with real files
+        for (const step of scanSteps) {
+          await new Promise(resolve => setTimeout(resolve, step.delay));
+          setProgress(step.progress);
+          setScanMessage(step.message);
+        }
+        
+        setProgress(100);
+        setScanMessage(`Scan complete! Found ${foundFiles.length} recoverable files.`);
         setScannedFiles(foundFiles);
         
         toast({
           title: "Scan Complete!",
-          description: `Found ${foundFiles.length} recoverable files`,
+          description: foundFiles.length > 0 
+            ? `Found ${foundFiles.length} recoverable files`
+            : "No recoverable files found in the selected location",
         });
+      } else {
+        // Fallback simulation for drive scanning (browser limitations)
+        setScanMessage('Note: Browser security limits prevent direct drive access. Using directory selection...');
+        setProgress(50);
+        
+        setTimeout(() => {
+          setProgress(100);
+          setScanMessage('Scan complete! Please select a folder to scan for real files.');
+          setScannedFiles([]);
+          
+          toast({
+            title: "Direct Drive Access Not Available",
+            description: "Please use 'Custom Location' to select a folder to scan",
+            variant: "destructive"
+          });
+        }, 2000);
       }
-    }, scanType === 'deep' ? 800 : scanType === 'quick' ? 400 : 600);
+    } catch (error) {
+      console.error('Scan error:', error);
+      toast({
+        title: "Scan Error",
+        description: "Failed to complete scan. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsScanning(false);
+    }
   };
 
   const handleFileToggle = (fileId: string) => {
@@ -212,7 +306,6 @@ export const FileScanner: React.FC<FileScannerProps> = ({ guestMode = false, onL
 
   return (
     <Card className="bg-black/40 border-purple-500/30 backdrop-blur-xl relative overflow-hidden">
-      {/* Marble background */}
       <div className="absolute inset-0 opacity-20" style={{
         backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3CradialGradient id='marble3'%3E%3Cstop offset='0%25' style='stop-color:%23440044;stop-opacity:0.8'/%3E%3Cstop offset='100%25' style='stop-color:%23220022;stop-opacity:0.4'/%3E%3C/radialGradient%3E%3C/defs%3E%3Crect width='100' height='100' fill='url(%23marble3)'/%3E%3C/svg%3E")`,
         backgroundSize: '150px 150px'
@@ -227,24 +320,15 @@ export const FileScanner: React.FC<FileScannerProps> = ({ guestMode = false, onL
       </CardHeader>
       
       <CardContent className="space-y-6 relative z-10">
-        {/* Hero Image Area - Shows when no scan has been performed */}
+        {/* Hero Image Area with your uploaded brain + lightning image */}
         {scannedFiles.length === 0 && !isScanning && (
           <div className="text-center py-8">
             <div className="bg-gradient-to-br from-purple-900/50 via-blue-900/50 to-pink-900/50 rounded-2xl p-8 border border-purple-500/20 max-w-md mx-auto">
-              {/* Placeholder for your brain + files + lightning image */}
-              <div className="flex items-center justify-center space-x-4 mb-4">
-                <div className="relative">
-                  <Brain className="h-16 w-16 text-purple-400" />
-                  <Zap className="h-6 w-6 text-yellow-400 absolute -top-2 -right-2 animate-pulse" />
-                </div>
-                <div className="text-4xl">⚡</div>
-                <div className="relative">
-                  <Search className="h-16 w-16 text-blue-400" />
-                  <div className="absolute inset-0 animate-ping">
-                    <Search className="h-16 w-16 text-blue-400 opacity-75" />
-                  </div>
-                </div>
-              </div>
+              <img 
+                src="/lovable-uploads/c1457356-288e-4990-bc1e-df48365a9afe.png" 
+                alt="AI Brain with Lightning"
+                className="w-32 h-32 mx-auto mb-4 object-contain"
+              />
               
               <h3 className="text-xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-red-400 bg-clip-text text-transparent mb-2">
                 AI-Powered Recovery

@@ -166,8 +166,8 @@ export const SubscriptionCard = () => {
               </div>
             </div>
 
-            {/* Pricing Display */}
-            <div className="text-center space-y-2">
+            {/* Enhanced Pricing Display with Your Pricing Image */}
+            <div className="text-center space-y-2 relative">
               {isLifetime && (
                 <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white mb-2">
                   <Crown className="h-3 w-3 mr-1" />
@@ -175,15 +175,43 @@ export const SubscriptionCard = () => {
                 </Badge>
               )}
               
-              <div className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                ${isLifetime ? '39.99' : '9.99'}
+              {/* Pricing Grid with Images */}
+              <div className="grid grid-cols-2 gap-2 mb-4">
+                {/* Monthly Plan */}
+                <div className={`p-3 rounded-lg border-2 transition-all ${
+                  !isLifetime 
+                    ? 'border-purple-500 bg-purple-500/10' 
+                    : 'border-gray-600 bg-gray-800/50'
+                }`}>
+                  <div className="text-lg font-bold text-purple-400">$9.99</div>
+                  <div className="text-xs text-slate-400">per month</div>
+                </div>
+                
+                {/* Lifetime Plan with Your Image */}
+                <div className={`p-3 rounded-lg border-2 transition-all relative ${
+                  isLifetime 
+                    ? 'border-gradient-to-r from-purple-500 to-pink-500 bg-gradient-to-br from-purple-900/50 to-pink-900/50' 
+                    : 'border-purple-400 bg-purple-800/30 hover:border-purple-300'
+                }`}>
+                  <img 
+                    src="/lovable-uploads/5f3eba1f-325c-453d-b727-90c8d183efcb.png" 
+                    alt="Lifetime Deal"
+                    className="absolute top-1 right-1 w-6 h-6 object-contain opacity-80"
+                  />
+                  <div className="text-lg font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                    $39.99
+                  </div>
+                  <div className="text-xs text-slate-400">lifetime</div>
+                  <div className="text-xs text-green-400 font-medium">Save $80+</div>
+                </div>
               </div>
+              
               <div className="text-sm text-slate-400">
-                {isLifetime ? 'One-time payment' : 'per month'}
+                {isLifetime ? 'One-time payment - Never pay again!' : 'Cancel anytime'}
               </div>
               {isLifetime && (
-                <div className="text-green-400 text-xs font-medium">
-                  Save $80+ vs Monthly Plan
+                <div className="text-green-400 text-xs font-medium animate-pulse">
+                  🚀 Limited Time: Pay Once, Use Forever!
                 </div>
               )}
             </div>
@@ -199,7 +227,8 @@ export const SubscriptionCard = () => {
                   '24/7 Lyra AI support',
                   ...(isLifetime ? [
                     'Lifetime updates',
-                    'No recurring fees ever'
+                    'No recurring fees ever',
+                    'Priority customer support'
                   ] : [])
                 ].map((feature, index) => (
                   <div key={index} className="flex items-center gap-2">
@@ -245,7 +274,7 @@ export const SubscriptionCard = () => {
             ) : (
               <>
                 <Crown className="mr-2 h-4 w-4" />
-                {isLifetime ? 'Get Lifetime Access' : 'Upgrade Now'}
+                {isLifetime ? 'Get Lifetime Access - $39.99' : 'Upgrade Now - $9.99/mo'}
               </>
             )}
           </Button>

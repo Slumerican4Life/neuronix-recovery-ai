@@ -7,18 +7,15 @@ export const RecoveryHero: React.FC = () => {
   return (
     <Card className="bg-black/40 border border-purple-500/30 backdrop-blur-xl p-8 text-center">
       <div className="space-y-6">
-        {/* Hero Image Area - This is where the first uploaded image should go */}
+        {/* Hero Image Area with your uploaded brain image */}
         <div className="relative mx-auto max-w-md">
           <div className="bg-gradient-to-br from-purple-900/50 via-blue-900/50 to-pink-900/50 rounded-2xl p-8 border border-purple-500/20">
-            {/* Placeholder for the brain + files + lightning image */}
-            <div className="flex items-center justify-center space-x-4">
-              <div className="relative">
-                <Brain className="h-16 w-16 text-purple-400" />
-                <Zap className="h-6 w-6 text-yellow-400 absolute -top-2 -right-2 animate-pulse" />
-              </div>
-              <div className="text-4xl text-gray-400">⚡</div>
-              <FileSearch className="h-16 w-16 text-blue-400" />
-            </div>
+            {/* Your brain + lightning image */}
+            <img 
+              src="/lovable-uploads/c1457356-288e-4990-bc1e-df48365a9afe.png" 
+              alt="AI Brain with Lightning - File Recovery"
+              className="w-32 h-32 mx-auto mb-4 object-contain"
+            />
             
             {/* Neural network pattern overlay */}
             <div className="absolute inset-0 opacity-20 rounded-2xl" style={{

@@ -8,7 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 
 export const PricingCard: React.FC = () => {
-  const [isLifetime, setIsLifetime] = useState(false);
+  const [isLifetime, setIsLifetime] = useState(true); // Default to lifetime for prominence
   const [isLoading, setIsLoading] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -99,26 +99,42 @@ export const PricingCard: React.FC = () => {
           </div>
         </div>
 
-        {/* Pricing Header */}
-        <div className="text-center">
+        {/* Enhanced Pricing Header with Your Image for Lifetime */}
+        <div className="text-center relative">
           {isLifetime && (
-            <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white mb-3">
-              <Crown className="h-3 w-3 mr-1" />
-              BEST VALUE
-            </Badge>
+            <>
+              <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white mb-3">
+                <Crown className="h-3 w-3 mr-1" />
+                BEST VALUE - LIMITED TIME
+              </Badge>
+              <img 
+                src="/lovable-uploads/5f3eba1f-325c-453d-b727-90c8d183efcb.png" 
+                alt="Lifetime Deal"
+                className="absolute top-0 right-0 w-16 h-16 object-contain opacity-80"
+              />
+            </>
           )}
           
           <div className="space-y-2">
-            <div className="text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+            <div className={`text-5xl font-bold ${
+              isLifetime 
+                ? 'bg-gradient-to-r from-purple-400 via-pink-400 to-red-400 bg-clip-text text-transparent'
+                : 'bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent'
+            }`}>
               ${isLifetime ? '39.99' : '9.99'}
             </div>
             <p className="text-gray-400">
               {isLifetime ? 'One-time payment' : 'per month'}
             </p>
             {isLifetime && (
-              <p className="text-green-400 text-sm font-medium">
-                Save $80+ vs Monthly Plan
-              </p>
+              <>
+                <p className="text-green-400 text-lg font-bold animate-pulse">
+                  🚀 Pay Once, Use Forever!
+                </p>
+                <p className="text-green-400 text-sm font-medium">
+                  Save $80+ vs Monthly Plan
+                </p>
+              </>
             )}
           </div>
         </div>
@@ -136,7 +152,9 @@ export const PricingCard: React.FC = () => {
               ...(isLifetime ? [
                 'Lifetime updates',
                 'Premium Lyra AI features',
-                'No recurring fees ever'
+                'No recurring fees ever',
+                'Priority customer support',
+                'Early access to new features'
               ] : [])
             ].map((feature, index) => (
               <div key={index} className="flex items-center gap-2">
@@ -155,22 +173,27 @@ export const PricingCard: React.FC = () => {
             isLifetime
               ? 'bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 hover:from-purple-700 hover:via-pink-700 hover:to-red-700'
               : 'bg-purple-600 hover:bg-purple-700'
-          } text-white font-semibold py-3`}
+          } text-white font-semibold py-3 text-lg`}
         >
           {isLoading ? (
             'Processing...'
           ) : (
             <>
-              <Zap className="h-4 w-4 mr-2" />
-              {isLifetime ? 'Get Lifetime Access' : 'Upgrade Now'}
+              <Zap className="h-5 w-5 mr-2" />
+              {isLifetime ? 'Get Lifetime Access - $39.99' : 'Upgrade Now - $9.99/mo'}
             </>
           )}
         </Button>
 
         {isLifetime && (
-          <p className="text-xs text-center text-gray-400">
-            ⚡ Limited time offer - Secure your lifetime access today
-          </p>
+          <div className="text-center space-y-2">
+            <p className="text-xs text-center text-gray-400">
+              ⚡ Limited time offer - Secure your lifetime access today
+            </p>
+            <p className="text-xs text-purple-400 font-medium">
+              Join thousands who chose lifetime and never looked back!
+            </p>
+          </div>
         )}
       </div>
     </Card>

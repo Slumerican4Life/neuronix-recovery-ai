@@ -17,6 +17,8 @@ interface ScannedFile {
   recovered: boolean;
   damage: 'none' | 'minor' | 'moderate' | 'severe';
   agent: 'SENTINEL' | 'SPECTRA-X' | 'QUILL-X';
+  lastModified?: number;
+  file?: File;
 }
 
 interface FileGridProps {
@@ -65,8 +67,24 @@ export const FileGrid: React.FC<FileGridProps> = ({ files, onFileToggle, guestMo
   };
 
   const handlePreview = (file: ScannedFile) => {
-    // In a real app, this would show a file preview modal
-    console.log('Preview file:', file);
+    if (file.file && file.thumbnail) {
+      // Create a modal or new window to show the file preview
+      const newWindow = window.open('', '_blank');
+      if (newWindow) {
+        newWindow.document.write(`
+          <html>
+            <head><title>Preview: ${file.name}</title></head>
+            <body style="margin:0;padding:20px;background:#000;color:#fff;font-family:Arial,sans-serif;">
+              <h2>File Preview</h2>
+              <p><strong>Name:</strong> ${file.name}</p>
+              <p><strong>Size:</strong> ${formatBytes(file.size)}</p>
+              <p><strong>Type:</strong> ${file.type.toUpperCase()}</p>
+              ${file.thumbnail ? `<img src="${file.thumbnail}" style="max-width:100%;height:auto;border:1px solid #333;"/>` : ''}
+            </body>
+          </html>
+        `);
+      }
+    }
   };
 
   const selectedCount = files.filter(f => f.recovered).length;
@@ -84,25 +102,25 @@ export const FileGrid: React.FC<FileGridProps> = ({ files, onFileToggle, guestMo
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
         {files.map((file) => {
           const IconComponent = getFileIcon(file.type);
           const isImage = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(file.type.toLowerCase());
 
           return (
-            <Card key={file.id} className="bg-black/60 border-gray-600 p-4 hover:border-purple-500/50 transition-colors">
-              <div className="space-y-3">
-                {/* File Preview/Icon */}
+            <Card key={file.id} className="bg-black/60 border-gray-600 p-3 hover:border-purple-500/50 transition-colors">
+              <div className="space-y-2">
+                {/* File Preview/Icon - Small 64px thumbnail */}
                 <div className="relative">
                   {file.thumbnail && isImage ? (
                     <img
                       src={file.thumbnail}
                       alt={file.name}
-                      className="w-full h-32 object-cover rounded bg-gray-800"
+                      className="w-16 h-16 object-cover rounded bg-gray-800 mx-auto"
                     />
                   ) : (
-                    <div className="w-full h-32 bg-gray-800 rounded flex items-center justify-center">
-                      <IconComponent className="h-12 w-12 text-gray-400" />
+                    <div className="w-16 h-16 bg-gray-800 rounded flex items-center justify-center mx-auto">
+                      <IconComponent className="h-8 w-8 text-gray-400" />
                     </div>
                   )}
                   
@@ -110,42 +128,40 @@ export const FileGrid: React.FC<FileGridProps> = ({ files, onFileToggle, guestMo
                   <Button
                     size="sm"
                     variant="ghost"
-                    className="absolute top-2 right-2 bg-black/60 hover:bg-black/80"
+                    className="absolute top-0 right-0 bg-black/60 hover:bg-black/80 p-1 h-6 w-6"
                     onClick={() => handlePreview(file)}
                   >
-                    <Eye className="h-4 w-4 text-white" />
+                    <Eye className="h-3 w-3 text-white" />
                   </Button>
                 </div>
 
                 {/* File Info */}
-                <div className="space-y-2">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1 min-w-0">
-                      <h4 className="text-white text-sm font-medium truncate" title={file.name}>
-                        {file.name}
-                      </h4>
-                      <p className="text-gray-400 text-xs">
-                        {formatBytes(file.size)} • {file.type.toUpperCase()}
-                      </p>
-                      <p className="text-gray-500 text-xs truncate" title={file.path}>
-                        {file.path}
-                      </p>
-                    </div>
+                <div className="space-y-1">
+                  <div>
+                    <h4 className="text-white text-xs font-medium truncate" title={file.name}>
+                      {file.name}
+                    </h4>
+                    <p className="text-gray-400 text-xs">
+                      {formatBytes(file.size)}
+                    </p>
+                    <p className="text-gray-500 text-xs truncate" title={file.path}>
+                      {file.path}
+                    </p>
                   </div>
 
                   {/* Badges */}
                   <div className="flex flex-wrap gap-1">
-                    <Badge className={getDamageColor(file.damage)} variant="outline">
+                    <Badge className={`${getDamageColor(file.damage)} text-xs`} variant="outline">
                       {file.damage === 'none' ? 'Perfect' : file.damage}
                     </Badge>
-                    <Badge className={getAgentColor(file.agent)} variant="outline">
+                    <Badge className={`${getAgentColor(file.agent)} text-xs`} variant="outline">
                       {file.agent}
                     </Badge>
                   </div>
 
                   {/* Selection Checkbox */}
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-1">
                       <Checkbox
                         id={file.id}
                         checked={file.recovered}
@@ -155,13 +171,13 @@ export const FileGrid: React.FC<FileGridProps> = ({ files, onFileToggle, guestMo
                         }}
                         disabled={!file.recovered && !canSelectMore}
                       />
-                      <label htmlFor={file.id} className="text-white text-sm">
+                      <label htmlFor={file.id} className="text-white text-xs">
                         Recover
                       </label>
                     </div>
 
                     {file.recovered && (
-                      <Download className="h-4 w-4 text-green-400" />
+                      <Download className="h-3 w-3 text-green-400" />
                     )}
                   </div>
                 </div>
