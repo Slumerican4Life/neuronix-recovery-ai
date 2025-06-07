@@ -1,9 +1,10 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Crown, Zap, Brain } from 'lucide-react';
+import { Crown, Zap, Brain, Check, Star } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 
@@ -22,6 +23,7 @@ export const SubscriptionCard = () => {
     monthly_recovery_limit: 5
   });
   const [loading, setLoading] = useState(false);
+  const [isLifetime, setIsLifetime] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -32,35 +34,54 @@ export const SubscriptionCard = () => {
     }
   }, [user]);
 
-  const handleUpgrade = async () => {
-    setLoading(true);
-    try {
+  const createCheckoutSession = async (priceId: string, isLifetimePlan: boolean) => {
+    if (!user) {
       toast({
-        title: "Redirecting to checkout...",
-        description: "You'll be redirected to complete your subscription",
-      });
-      
-      // Simulate upgrade
-      setTimeout(() => {
-        setSubscriptionData(prev => ({
-          ...prev,
-          subscribed: true,
-          subscription_tier: 'premium',
-          monthly_recovery_limit: 999999
-        }));
-        toast({
-          title: "Welcome to Premium!",
-          description: "You now have unlimited file recoveries",
-        });
-        setLoading(false);
-      }, 2000);
-    } catch (error) {
-      toast({
-        title: "Upgrade failed",
-        description: "Please try again later",
+        title: "Authentication Required",
+        description: "Please sign in to upgrade your subscription.",
         variant: "destructive",
       });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await fetch('https://dvpeahnehnvofjzozmng.functions.supabase.co/create-checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          priceId,
+          userId: user.id,
+          isLifetime: isLifetimePlan,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create checkout session');
+      }
+
+      const { checkoutUrl } = await response.json();
+      window.open(checkoutUrl, '_blank');
+    } catch (error) {
+      console.error('Error creating checkout:', error);
+      toast({
+        title: "Error",
+        description: "Failed to start checkout process. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
       setLoading(false);
+    }
+  };
+
+  const handleUpgrade = () => {
+    if (isLifetime) {
+      createCheckoutSession('price_1RXRl5EEqiDDPmsdmZH4XpAW', true);
+    } else {
+      // Monthly subscription - you'll need to add your monthly price ID here
+      createCheckoutSession('price_monthly_here', false);
     }
   };
 
@@ -96,26 +117,99 @@ export const SubscriptionCard = () => {
         </div>
 
         {!subscriptionData.subscribed && (
-          <div className="space-y-3">
-            <div className="text-slate-300">
-              Monthly Recovery Usage:
+          <>
+            <div className="space-y-3">
+              <div className="text-slate-300">
+                Monthly Recovery Usage:
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm text-slate-400">
+                  <span>{subscriptionData.recovery_count} used</span>
+                  <span>{subscriptionData.monthly_recovery_limit} limit</span>
+                </div>
+                <Progress value={usagePercentage} className="h-2" />
+              </div>
+              
+              {usagePercentage > 80 && (
+                <div className="bg-orange-500/10 border border-orange-500/30 rounded-lg p-3">
+                  <p className="text-orange-300 text-sm">
+                    You're running low on recoveries! Upgrade to Premium for unlimited access.
+                  </p>
+                </div>
+              )}
             </div>
+
+            {/* Plan Toggle */}
+            <div className="flex items-center justify-center">
+              <div className="bg-gray-800 p-1 rounded-lg flex">
+                <button
+                  onClick={() => setIsLifetime(false)}
+                  className={`px-3 py-2 rounded text-xs font-medium transition-colors ${
+                    !isLifetime 
+                      ? 'bg-purple-600 text-white' 
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  Monthly
+                </button>
+                <button
+                  onClick={() => setIsLifetime(true)}
+                  className={`px-3 py-2 rounded text-xs font-medium transition-colors ${
+                    isLifetime 
+                      ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white' 
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  Lifetime
+                  {isLifetime && <Star className="h-3 w-3 ml-1 inline" />}
+                </button>
+              </div>
+            </div>
+
+            {/* Pricing Display */}
+            <div className="text-center space-y-2">
+              {isLifetime && (
+                <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white mb-2">
+                  <Crown className="h-3 w-3 mr-1" />
+                  BEST VALUE
+                </Badge>
+              )}
+              
+              <div className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                ${isLifetime ? '39.99' : '9.99'}
+              </div>
+              <div className="text-sm text-slate-400">
+                {isLifetime ? 'One-time payment' : 'per month'}
+              </div>
+              {isLifetime && (
+                <div className="text-green-400 text-xs font-medium">
+                  Save $80+ vs Monthly Plan
+                </div>
+              )}
+            </div>
+
+            {/* Features */}
             <div className="space-y-2">
-              <div className="flex justify-between text-sm text-slate-400">
-                <span>{subscriptionData.recovery_count} used</span>
-                <span>{subscriptionData.monthly_recovery_limit} limit</span>
+              <div className="text-sm font-semibold text-white">Premium Features:</div>
+              <div className="space-y-1">
+                {[
+                  'Unlimited file recoveries',
+                  'All AI agents access',
+                  'Priority processing',
+                  '24/7 Lyra AI support',
+                  ...(isLifetime ? [
+                    'Lifetime updates',
+                    'No recurring fees ever'
+                  ] : [])
+                ].map((feature, index) => (
+                  <div key={index} className="flex items-center gap-2">
+                    <Check className="h-3 w-3 text-green-400 flex-shrink-0" />
+                    <span className="text-slate-300 text-xs">{feature}</span>
+                  </div>
+                ))}
               </div>
-              <Progress value={usagePercentage} className="h-2" />
             </div>
-            
-            {usagePercentage > 80 && (
-              <div className="bg-orange-500/10 border border-orange-500/30 rounded-lg p-3">
-                <p className="text-orange-300 text-sm">
-                  You're running low on recoveries! Upgrade to Premium for unlimited access.
-                </p>
-              </div>
-            )}
-          </div>
+          </>
         )}
 
         {subscriptionData.subscribed ? (
@@ -134,35 +228,27 @@ export const SubscriptionCard = () => {
             </div>
           </div>
         ) : (
-          <div className="space-y-3">
-            <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/30 rounded-lg p-4">
-              <div className="text-center space-y-2">
-                <div className="text-lg font-semibold text-white">Upgrade to Premium</div>
-                <div className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                  $9.99/month
-                </div>
-                <div className="text-sm text-slate-400">Unlock unlimited recoveries</div>
-              </div>
-            </div>
-            
-            <Button
-              onClick={handleUpgrade}
-              disabled={loading}
-              className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold"
-            >
-              {loading ? (
-                <>
-                  <Zap className="mr-2 h-4 w-4 animate-pulse" />
-                  Processing...
-                </>
-              ) : (
-                <>
-                  <Crown className="mr-2 h-4 w-4" />
-                  Upgrade Now
-                </>
-              )}
-            </Button>
-          </div>
+          <Button
+            onClick={handleUpgrade}
+            disabled={loading}
+            className={`w-full ${
+              isLifetime
+                ? 'bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 hover:from-purple-700 hover:via-pink-700 hover:to-red-700'
+                : 'bg-purple-600 hover:bg-purple-700'
+            } text-white font-semibold`}
+          >
+            {loading ? (
+              <>
+                <Zap className="mr-2 h-4 w-4 animate-pulse" />
+                Processing...
+              </>
+            ) : (
+              <>
+                <Crown className="mr-2 h-4 w-4" />
+                {isLifetime ? 'Get Lifetime Access' : 'Upgrade Now'}
+              </>
+            )}
+          </Button>
         )}
       </CardContent>
     </Card>

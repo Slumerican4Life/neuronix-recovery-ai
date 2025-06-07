@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -228,6 +227,35 @@ export const FileScanner: React.FC<FileScannerProps> = ({ guestMode = false, onL
       </CardHeader>
       
       <CardContent className="space-y-6 relative z-10">
+        {/* Hero Image Area - Shows when no scan has been performed */}
+        {scannedFiles.length === 0 && !isScanning && (
+          <div className="text-center py-8">
+            <div className="bg-gradient-to-br from-purple-900/50 via-blue-900/50 to-pink-900/50 rounded-2xl p-8 border border-purple-500/20 max-w-md mx-auto">
+              {/* Placeholder for your brain + files + lightning image */}
+              <div className="flex items-center justify-center space-x-4 mb-4">
+                <div className="relative">
+                  <Brain className="h-16 w-16 text-purple-400" />
+                  <Zap className="h-6 w-6 text-yellow-400 absolute -top-2 -right-2 animate-pulse" />
+                </div>
+                <div className="text-4xl">⚡</div>
+                <div className="relative">
+                  <Search className="h-16 w-16 text-blue-400" />
+                  <div className="absolute inset-0 animate-ping">
+                    <Search className="h-16 w-16 text-blue-400 opacity-75" />
+                  </div>
+                </div>
+              </div>
+              
+              <h3 className="text-xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-red-400 bg-clip-text text-transparent mb-2">
+                AI-Powered Recovery
+              </h3>
+              <p className="text-gray-300 text-sm">
+                Start scanning to discover recoverable files with our advanced neural network
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Drive Selection */}
         <div className="space-y-4">
           <div className="flex items-center gap-2 text-white font-medium">
