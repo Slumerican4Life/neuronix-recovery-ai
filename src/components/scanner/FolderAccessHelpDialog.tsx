@@ -2,7 +2,8 @@
 import React from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Help } from "lucide-react";
+import { help } from "lucide-react"; // Import proper icon node
+import { Icon } from "lucide-react"; // To render icon nodes
 
 export const FolderAccessHelpDialog: React.FC = () => (
   <Dialog>
@@ -13,7 +14,7 @@ export const FolderAccessHelpDialog: React.FC = () => (
         className="ml-2 text-purple-400 hover:text-purple-300 flex items-center gap-1"
         aria-label="Help with Folder Access"
       >
-        <Help className="h-4 w-4" />
+        <Icon iconNode={help} className="h-4 w-4" />
         Help
       </Button>
     </DialogTrigger>
@@ -21,7 +22,7 @@ export const FolderAccessHelpDialog: React.FC = () => (
       <DialogHeader>
         <DialogTitle>How to Grant Folder Access</DialogTitle>
         <DialogDescription>
-          In order to scan your files, you need to grant this app access to a folder.
+          To scan your files, you need to grant this app permission to a folder.
         </DialogDescription>
       </DialogHeader>
       <div className="space-y-3 text-sm text-gray-800">
@@ -30,15 +31,15 @@ export const FolderAccessHelpDialog: React.FC = () => (
             Click the <span className="font-semibold">"Choose Folder for AI Analysis..."</span> button.
           </li>
           <li>
-            In the dialog window that appears, select the folder you wish to scan, then click <span className="font-semibold">"Select Folder"</span> or <span className="font-semibold">"Open"</span>.
+            In the dialog window that appears, select the folder you wish to scan and click <span className="font-semibold">"Select Folder"</span> or <span className="font-semibold">"Open"</span>.
           </li>
           <li>
-            If prompted, confirm permission to allow this site to access the folder.
+            If prompted, give this site permission to access the folder.
           </li>
         </ol>
         <p className="mt-2">
-          <span className="font-semibold text-purple-600">Tip:</span> If you accidentally denied permission, refresh this page and try again.<br/>
-          <span className="font-semibold text-purple-600">Supported browsers:</span> Chrome, Edge, Brave, and other Chromium-based browsers.
+          <span className="font-semibold text-purple-600">Tip:</span> If you accidentally denied permission, refresh the page and try again.<br/>
+          <span className="font-semibold text-purple-600">Supported browsers:</span> Chrome, Edge, Brave, and other Chromium browsers.
         </p>
         <ul className="mt-2 list-disc list-inside">
           <li>
@@ -51,4 +52,3 @@ export const FolderAccessHelpDialog: React.FC = () => (
       </div>
     </DialogContent>
   </Dialog>
-);
