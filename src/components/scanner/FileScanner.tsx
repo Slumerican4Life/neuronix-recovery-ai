@@ -97,74 +97,91 @@ export const FileScanner: React.FC<FileScannerProps> = ({ guestMode = false, onL
 
   // Helper: "Try Sample Scan" logic (loads demo files)
   const handleDemoScan = () => {
-    setIsScanning(true);
-    setScanMode('demo');
-    setProgress(0);
-    setScanMessage('Loading sample AI scan results...');
-    setTimeout(() => {
-      setScannedFiles(DEMO_FILES as ScannedFile[]);
-      setProgress(100);
-      setScanMessage('Sample scan: AI-powered results loaded!');
+    try {
+      setIsScanning(true);
+      setScanMode('demo');
+      setProgress(0);
+      setScanMessage('Loading sample AI scan results...');
+      setTimeout(() => {
+        setScannedFiles(DEMO_FILES as ScannedFile[]);
+        setProgress(100);
+        setScanMessage('Sample scan: AI-powered results loaded!');
+        setIsScanning(false);
+      }, 1000);
+    } catch (err) {
+      console.error("DemoScan failed", err);
       setIsScanning(false);
-    }, 1000);
+      setScanMessage("Failed to load demo scan. Try again.");
+    }
   };
 
   // Helper: "Upload Files Instead" (let users select files manually)
   const handleFileUploadClick = () => {
-    setScanMode('files');
-    fileInputRef.current?.click();
+    try {
+      setScanMode('files');
+      fileInputRef.current?.click();
+    } catch (err) {
+      console.error("File upload trigger failed", err);
+      setScanMessage("Could not open file dialog. Try again.");
+    }
   };
 
   const handleFileInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files ?? []);
-    if (files.length === 0) return;
+    try {
+      const files = Array.from(e.target.files ?? []);
+      if (files.length === 0) return;
 
-    setIsScanning(true);
-    setScannedFiles([]);
-    setProgress(0);
-    setScanMessage('Initializing AI-powered file analysis...');
-    let foundFiles: ScannedFile[] = [];
-    let i = 0;
-    for (const file of files) {
-      const extension = file.name.split('.').pop()?.toLowerCase() || '';
-      const isSelectedType = detectFileType(extension, selectedFileTypes);
-      if (!isSelectedType) continue;
-      const agent = getAgentForFile(extension);
-      setScanningAgent(agent);
-      setScanMessage(`${agent}: Analyzing ${file.name} with LYRA AI...`);
-      const fileSignature = `${extension}:${file.size}:${file.lastModified}`;
-      const { confidence, damage } = await analyzeFileWithAI(file, fileSignature);
-      const thumbnail = await generateThumbnail(file);
-      foundFiles.push({
-        id: `file_upload_${foundFiles.length}_${Date.now()}`,
-        name: file.name,
-        type: extension,
-        size: file.size,
-        path: file.name,
-        thumbnail,
-        recovered: false,
-        damage,
-        agent,
-        lastModified: file.lastModified,
-        file,
-        recoveryConfidence: confidence,
-        deletionDate: undefined
+      setIsScanning(true);
+      setScannedFiles([]);
+      setProgress(0);
+      setScanMessage('Initializing AI-powered file analysis...');
+      let foundFiles: ScannedFile[] = [];
+      let i = 0;
+      for (const file of files) {
+        const extension = file.name.split('.').pop()?.toLowerCase() || '';
+        const isSelectedType = detectFileType(extension, selectedFileTypes);
+        if (!isSelectedType) continue;
+        const agent = getAgentForFile(extension);
+        setScanningAgent(agent);
+        setScanMessage(`${agent}: Analyzing ${file.name} with LYRA AI...`);
+        const fileSignature = `${extension}:${file.size}:${file.lastModified}`;
+        const { confidence, damage } = await analyzeFileWithAI(file, fileSignature);
+        const thumbnail = await generateThumbnail(file);
+        foundFiles.push({
+          id: `file_upload_${foundFiles.length}_${Date.now()}`,
+          name: file.name,
+          type: extension,
+          size: file.size,
+          path: file.name,
+          thumbnail,
+          recovered: false,
+          damage,
+          agent,
+          lastModified: file.lastModified,
+          file,
+          recoveryConfidence: confidence,
+          deletionDate: undefined
+        });
+        i++;
+        setProgress(Math.min(95, (i / files.length) * 100));
+      }
+      setProgress(100);
+      setScanMessage(`AI Scan Complete! Found ${foundFiles.length} recoverable files with OpenAI analysis.`);
+      setScannedFiles(foundFiles);
+      setIsScanning(false);
+      setScanningAgent(null);
+      toast({
+        title: "🧠 LYRA AI File Scan Complete!",
+        description: foundFiles.length > 0 
+          ? `Found ${foundFiles.length} files with AI-powered OpenAI analysis`
+          : "No files of the selected types found in uploaded files.",
       });
-      i++;
-      setProgress(Math.min(95, (i / files.length) * 100));
+      e.target.value = '';
+    } catch (err) {
+      console.error("File input change failed", err);
+      setIsScanning(false);
+      setScanMessage("Failed analyzing files. Try again.");
     }
-    setProgress(100);
-    setScanMessage(`AI Scan Complete! Found ${foundFiles.length} recoverable files with OpenAI analysis.`);
-    setScannedFiles(foundFiles);
-    setIsScanning(false);
-    setScanningAgent(null);
-    toast({
-      title: "🧠 LYRA AI File Scan Complete!",
-      description: foundFiles.length > 0 
-        ? `Found ${foundFiles.length} files with AI-powered OpenAI analysis`
-        : "No files of the selected types found in uploaded files.",
-    });
-    e.target.value = '';
   };
 
   // --- Existing directory scan logic ---
@@ -225,11 +242,20 @@ export const FileScanner: React.FC<FileScannerProps> = ({ guestMode = false, onL
   };
 
   const handleDeepScan = async () => {
-    setScanMode('folder');
-    const dirHandle = await requestDirectoryAccess();
-    if (!dirHandle) return;
-    
-    await performAIScan(dirHandle);
+    try {
+      setScanMode('folder');
+      const dirHandle = await requestDirectoryAccess();
+      if (!dirHandle) {
+        setScanMessage("Folder access was not granted. Try again.");
+        return;
+      }
+      
+      await performAIScan(dirHandle);
+    } catch (err) {
+      console.error("Deep scan failed", err);
+      setIsScanning(false);
+      setScanMessage("Deep scan failed. Try again.");
+    }
   };
 
   const performAIScan = async (dirHandle: any) => {
