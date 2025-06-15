@@ -52,3 +52,4 @@ export const FolderAccessHelpDialog: React.FC = () => (
       </div>
     </DialogContent>
   </Dialog>
+);
