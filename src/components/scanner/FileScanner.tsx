@@ -450,8 +450,13 @@ export const FileScanner: React.FC<FileScannerProps> = ({ guestMode = false, onL
       {scannedFiles.length > 0 && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-white">
+            <h3 className="text-lg font-semibold text-white flex items-center gap-2">
               🧠 LYRA AI Results: {scannedFiles.length} Files Found
+              {scanMode === 'demo' && (
+                <Badge variant="outline" className="border-green-500 text-green-400">
+                  Sample Scan
+                </Badge>
+              )}
             </h3>
             <Button
               onClick={handleRecoverSelected}
