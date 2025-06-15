@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Search, FileX, AlertTriangle, FolderOpen, Brain } from 'lucide-react';
+import { Search, FileX, AlertTriangle, FolderOpen, Brain, Upload } from 'lucide-react';
 import { FileGrid } from './FileGrid';
 import { FileTypeSelector } from './FileTypeSelector';
 import { ScanProgress } from './ScanProgress';
@@ -12,6 +12,52 @@ import { useDirectoryAccess } from '@/hooks/useDirectoryAccess';
 import { detectFileType, getAgentForFile } from '@/utils/fileTypeDetection';
 import { generateThumbnail } from '@/utils/thumbnailGenerator';
 import { FolderAccessHelpDialog } from "./FolderAccessHelpDialog";
+
+// New: Prepare dummy/sample scan data
+const DEMO_FILES = [
+  {
+    id: 'demo1',
+    name: 'family_photo.jpg',
+    type: 'jpg',
+    size: 2048576,
+    path: 'Photos/family_photo.jpg',
+    thumbnail: '/lovable-uploads/e924ddd2-96a0-4051-a12b-b143448345ee.png',
+    recovered: false,
+    damage: 'none',
+    agent: 'SENTINEL',
+    lastModified: Date.now() - 7 * 24 * 60 * 60 * 1000,
+    recoveryConfidence: 95,
+    deletionDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+  },
+  {
+    id: 'demo2',
+    name: 'resume.docx',
+    type: 'docx',
+    size: 153600,
+    path: 'Documents/resume.docx',
+    thumbnail: undefined,
+    recovered: false,
+    damage: 'minor',
+    agent: 'QUILL-X',
+    lastModified: Date.now() - 15 * 24 * 60 * 60 * 1000,
+    recoveryConfidence: 82,
+    deletionDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+  },
+  {
+    id: 'demo3',
+    name: 'birthday_video.mp4',
+    type: 'mp4',
+    size: 18500000,
+    path: 'Videos/birthday_video.mp4',
+    thumbnail: undefined,
+    recovered: false,
+    damage: 'moderate',
+    agent: 'SPECTRA-X',
+    lastModified: Date.now() - 20 * 24 * 60 * 60 * 1000,
+    recoveryConfidence: 63,
+    deletionDate: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+  }
+];
 
 interface FileScannerProps {
   guestMode?: boolean;
@@ -41,11 +87,86 @@ export const FileScanner: React.FC<FileScannerProps> = ({ guestMode = false, onL
   const [scanMessage, setScanMessage] = useState('Ready to perform AI-powered deep scan');
   const [selectedFileTypes, setSelectedFileTypes] = useState<string[]>(['images', 'documents', 'videos', 'audio']);
   const [scanningAgent, setScanningAgent] = useState<'SENTINEL' | 'SPECTRA-X' | 'QUILL-X' | null>(null);
-  
+  const [scanMode, setScanMode] = useState<'folder' | 'files' | 'demo'>('folder');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const { toast } = useToast();
   const { analyzeFileWithAI } = useFileAnalysis();
   const { selectedFolder, requestDirectoryAccess } = useDirectoryAccess();
 
+  // Helper: "Try Sample Scan" logic (loads demo files)
+  const handleDemoScan = () => {
+    setIsScanning(true);
+    setScanMode('demo');
+    setProgress(0);
+    setScanMessage('Loading sample AI scan results...');
+    setTimeout(() => {
+      setScannedFiles(DEMO_FILES as ScannedFile[]);
+      setProgress(100);
+      setScanMessage('Sample scan: AI-powered results loaded!');
+      setIsScanning(false);
+    }, 1000);
+  };
+
+  // Helper: "Upload Files Instead" (let users select files manually)
+  const handleFileUploadClick = () => {
+    setScanMode('files');
+    fileInputRef.current?.click();
+  };
+
+  const handleFileInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+    if (files.length === 0) return;
+
+    setIsScanning(true);
+    setScannedFiles([]);
+    setProgress(0);
+    setScanMessage('Initializing AI-powered file analysis...');
+    let foundFiles: ScannedFile[] = [];
+    let i = 0;
+    for (const file of files) {
+      const extension = file.name.split('.').pop()?.toLowerCase() || '';
+      const isSelectedType = detectFileType(extension, selectedFileTypes);
+      if (!isSelectedType) continue;
+      const agent = getAgentForFile(extension);
+      setScanningAgent(agent);
+      setScanMessage(`${agent}: Analyzing ${file.name} with LYRA AI...`);
+      const fileSignature = `${extension}:${file.size}:${file.lastModified}`;
+      const { confidence, damage } = await analyzeFileWithAI(file, fileSignature);
+      const thumbnail = await generateThumbnail(file);
+      foundFiles.push({
+        id: `file_upload_${foundFiles.length}_${Date.now()}`,
+        name: file.name,
+        type: extension,
+        size: file.size,
+        path: file.name,
+        thumbnail,
+        recovered: false,
+        damage,
+        agent,
+        lastModified: file.lastModified,
+        file,
+        recoveryConfidence: confidence,
+        deletionDate: undefined
+      });
+      i++;
+      setProgress(Math.min(95, (i / files.length) * 100));
+    }
+    setProgress(100);
+    setScanMessage(`AI Scan Complete! Found ${foundFiles.length} recoverable files with OpenAI analysis.`);
+    setScannedFiles(foundFiles);
+    setIsScanning(false);
+    setScanningAgent(null);
+    toast({
+      title: "🧠 LYRA AI File Scan Complete!",
+      description: foundFiles.length > 0 
+        ? `Found ${foundFiles.length} files with AI-powered OpenAI analysis`
+        : "No files of the selected types found in uploaded files.",
+    });
+    e.target.value = '';
+  };
+
+  // --- Existing directory scan logic ---
   const scanDirectoryWithAI = async (dirHandle: any, path = '', foundFiles: ScannedFile[] = []): Promise<ScannedFile[]> => {
     try {
       for await (const entry of dirHandle.values()) {
@@ -103,6 +224,7 @@ export const FileScanner: React.FC<FileScannerProps> = ({ guestMode = false, onL
   };
 
   const handleDeepScan = async () => {
+    setScanMode('folder');
     const dirHandle = await requestDirectoryAccess();
     if (!dirHandle) return;
     
@@ -241,18 +363,62 @@ export const FileScanner: React.FC<FileScannerProps> = ({ guestMode = false, onL
 
       {/* Folder Selection */}
       <div className="space-y-4">
-        <div className="flex items-center gap-2 text-white font-medium">
-          <FolderOpen className="h-4 w-4 text-blue-400" />
-          Select Folder for LYRA AI Deep Scan
-          <FolderAccessHelpDialog />
+        {/* Friendly explanation */}
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-2 text-white font-medium">
+            <FolderOpen className="h-4 w-4 text-blue-400" />
+            Select Folder for LYRA AI Deep Scan
+            <FolderAccessHelpDialog />
+          </div>
+          <p className="text-xs text-gray-400 pl-6">
+            <b>Why?</b> To let our AI scan your files, you choose a folder—your data never leaves your device. 
+            <span className="text-purple-400"> Try below for full power, or pick a safer option.</span>
+          </p>
         </div>
-        <Button
-          onClick={requestDirectoryAccess}
-          variant="outline"
-          className="w-full bg-black/60 border-gray-600 text-white hover:bg-gray-800"
-        >
-          {selectedFolder ? `Selected: ${selectedFolder}` : "Choose Folder for AI Analysis..."}
-        </Button>
+        <div className="flex flex-col sm:flex-row gap-2 w-full">
+          <Button
+            onClick={handleDeepScan}
+            variant={scanMode === 'folder' ? 'default' : 'outline'}
+            className="flex-1 bg-black/60 border-gray-600 text-white hover:bg-gray-800"
+            disabled={isScanning}
+          >
+            <FolderOpen className="mr-2 h-5 w-5" />
+            {selectedFolder ? `Selected: ${selectedFolder}` : "Choose Folder for AI Analysis..."}
+          </Button>
+          <Button
+            onClick={handleFileUploadClick}
+            variant={scanMode === 'files' ? 'default' : 'outline'}
+            className="flex-1 bg-black/70 border-blue-700 text-blue-200 hover:bg-blue-800"
+            disabled={isScanning}
+          >
+            <Upload className="mr-1 h-5 w-5" />
+            Upload Files Instead
+          </Button>
+          <Button
+            onClick={handleDemoScan}
+            variant={scanMode === 'demo' ? 'default' : 'outline'}
+            className="flex-1 bg-black/80 border-green-700 text-green-300 hover:bg-green-800"
+            disabled={isScanning}
+          >
+            <Brain className="mr-1 h-5 w-5" />
+            Try Sample Scan
+          </Button>
+        </div>
+        {/* Hidden file input for "Upload Files Instead" */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          className="hidden"
+          multiple
+          accept={selectedFileTypes.map(type => {
+            if (type === 'images') return '.png,.jpg,.jpeg,.gif,.bmp,.webp';
+            if (type === 'documents') return '.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.rtf';
+            if (type === 'videos') return '.mp4,.mov,.avi,.mkv,.wmv,.flv';
+            if (type === 'audio') return '.mp3,.wav,.ogg,.flac,.aac,.m4a';
+            return '';
+          }).join(',')}
+          onChange={handleFileInputChange}
+        />
       </div>
 
       <FileTypeSelector
@@ -262,23 +428,24 @@ export const FileScanner: React.FC<FileScannerProps> = ({ guestMode = false, onL
 
       <ScanProgress progress={progress} message={scanMessage} />
 
-      <Button
-        onClick={handleDeepScan}
-        disabled={isScanning || selectedFileTypes.length === 0}
-        className="w-full bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 hover:from-purple-700 hover:via-pink-700 hover:to-red-700 text-white font-semibold py-4 text-lg"
-      >
-        {isScanning ? (
-          <>
-            <Brain className="mr-2 h-5 w-5 animate-pulse" />
-            🧠 LYRA AI Scanning...
-          </>
-        ) : (
-          <>
-            <Search className="mr-2 h-5 w-5" />
-            🚀 Start LYRA AI Deep Scan
-          </>
-        )}
-      </Button>
+      {/* Only show main scan & recover UI for folder or file upload, not demo */}
+      {(scanMode === 'folder' || scanMode === 'files' || scanMode === 'demo') && (
+        <>
+          {isScanning ? (
+            <Button
+              disabled
+              className="w-full bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 text-white font-semibold py-4 text-lg"
+            >
+              <Brain className="mr-2 h-5 w-5 animate-pulse" />
+              🧠 LYRA AI Scanning...
+            </Button>
+          ) : (
+            <>
+              
+            </>
+          )}
+        </>
+      )}
 
       {scannedFiles.length > 0 && (
         <div className="space-y-4">
