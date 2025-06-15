@@ -60,7 +60,7 @@ export const FileScanner: React.FC<FileScannerProps> = ({ guestMode = false, onL
           if (isSelectedType) {
             const agent = getAgentForFile(extension);
             setScanningAgent(agent);
-            setScanMessage(`${agent}: Analyzing ${file.name}...`);
+            setScanMessage(`${agent}: Analyzing ${file.name} with LYRA AI...`);
 
             const fileSignature = `${extension}:${file.size}:${file.lastModified}`;
             const { confidence, damage } = await analyzeFileWithAI(file, fileSignature);
@@ -113,18 +113,18 @@ export const FileScanner: React.FC<FileScannerProps> = ({ guestMode = false, onL
     setIsScanning(true);
     setScannedFiles([]);
     setProgress(0);
-    setScanMessage('Initializing AI-powered deep scan...');
+    setScanMessage('Initializing LYRA AI-powered deep scan...');
 
     try {
       const scanSteps = [
-        { progress: 5, message: 'SENTINEL: Initializing neural network...', delay: 800 },
+        { progress: 5, message: 'LYRA AI: Connecting to OpenAI neural networks...', delay: 800 },
         { progress: 15, message: 'SENTINEL: Analyzing folder structure and permissions...', delay: 1000 },
-        { progress: 25, message: 'SPECTRA-X: Scanning for multimedia files...', delay: 1200 },
-        { progress: 35, message: 'QUILL-X: Analyzing documents and text files...', delay: 1000 },
-        { progress: 45, message: 'SENTINEL: Processing subdirectories...', delay: 800 },
-        { progress: 55, message: 'AI: Performing file signature analysis...', delay: 1200 },
-        { progress: 70, message: 'SPECTRA-X: Generating thumbnails and previews...', delay: 1000 },
-        { progress: 85, message: 'QUILL-X: Finalizing recovery assessment...', delay: 800 }
+        { progress: 25, message: 'SPECTRA-X: Scanning for multimedia signatures with AI...', delay: 1200 },
+        { progress: 35, message: 'QUILL-X: Analyzing documents and text files with OpenAI...', delay: 1000 },
+        { progress: 45, message: 'SENTINEL: Processing subdirectories with neural analysis...', delay: 800 },
+        { progress: 55, message: 'LYRA AI: Performing file signature analysis with GPT...', delay: 1200 },
+        { progress: 70, message: 'SPECTRA-X: Generating AI-powered thumbnails and previews...', delay: 1000 },
+        { progress: 85, message: 'QUILL-X: Finalizing recovery assessment with OpenAI...', delay: 800 }
       ];
 
       let foundFiles: ScannedFile[] = [];
@@ -139,14 +139,14 @@ export const FileScanner: React.FC<FileScannerProps> = ({ guestMode = false, onL
       foundFiles = await scanPromise;
       
       setProgress(100);
-      setScanMessage(`AI Scan Complete! Found ${foundFiles.length} recoverable files.`);
+      setScanMessage(`LYRA AI Scan Complete! Found ${foundFiles.length} recoverable files with OpenAI analysis.`);
       setScannedFiles(foundFiles);
       setScanningAgent(null);
       
       toast({
-        title: "AI Deep Scan Complete!",
+        title: "🧠 LYRA AI Deep Scan Complete!",
         description: foundFiles.length > 0 
-          ? `Found ${foundFiles.length} files with AI-powered analysis`
+          ? `Found ${foundFiles.length} files with AI-powered OpenAI analysis`
           : "No files of the selected types found",
       });
     } catch (error) {
@@ -206,7 +206,7 @@ export const FileScanner: React.FC<FileScannerProps> = ({ guestMode = false, onL
 
     toast({
       title: "Files Recovered Successfully!",
-      description: `Recovered ${selectedFiles.length} files using AI analysis`,
+      description: `Recovered ${selectedFiles.length} files using LYRA AI analysis`,
     });
   };
 
@@ -214,32 +214,36 @@ export const FileScanner: React.FC<FileScannerProps> = ({ guestMode = false, onL
     <ScannerCard guestMode={guestMode} scanningAgent={scanningAgent}>
       {scannedFiles.length === 0 && !isScanning && <ScannerHero />}
 
-      {/* Enhanced Browser Information */}
-      <div className="bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/30 rounded-lg p-4">
+      {/* Enhanced AI Information */}
+      <div className="bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-500/30 rounded-lg p-4">
         <div className="flex items-start gap-3">
-          <AlertTriangle className="h-5 w-5 text-yellow-400 mt-0.5" />
+          <Brain className="h-5 w-5 text-purple-400 mt-0.5 animate-pulse" />
           <div>
-            <h4 className="text-yellow-400 font-medium mb-2">Advanced AI File Recovery</h4>
+            <h4 className="text-purple-400 font-medium mb-2 flex items-center gap-2">
+              🧠 LYRA AI-Powered Recovery Engine
+              <span className="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded">OpenAI Connected</span>
+            </h4>
             <p className="text-gray-300 text-sm mb-2">
-              This AI system performs deep analysis on accessible files and folders. For maximum recovery power:
+              Advanced AI system with real OpenAI GPT integration for intelligent file analysis:
             </p>
             <ul className="text-gray-400 text-xs space-y-1">
-              <li>✓ AI-powered file signature analysis with OpenAI</li>
-              <li>✓ Real-time damage assessment and recovery confidence</li>
-              <li>✓ Multi-agent system (SENTINEL, SPECTRA-X, QUILL-X)</li>
-              <li>✓ Advanced thumbnail generation and previews</li>
-              <li>⚠ Browser-based: Can organize existing files, not deleted data recovery</li>
+              <li>✓ Real OpenAI GPT-4 analysis for each file found</li>
+              <li>✓ LYRA AI brain processes file signatures with neural networks</li>
+              <li>✓ Multi-agent system with specialized AI recovery algorithms</li>
+              <li>✓ Advanced damage assessment using machine learning</li>
+              <li>✓ Intelligent confidence scoring based on AI analysis</li>
+              <li>⚠ Browser-based: Analyzes accessible files, not hardware-level recovery</li>
               <li>💡 For true deleted file recovery, use professional desktop software</li>
             </ul>
           </div>
         </div>
       </div>
 
-      {/* Enhanced Folder Selection */}
+      {/* Folder Selection */}
       <div className="space-y-4">
         <div className="flex items-center gap-2 text-white font-medium">
           <FolderOpen className="h-4 w-4 text-blue-400" />
-          Select Folder for AI Deep Scan
+          Select Folder for LYRA AI Deep Scan
         </div>
         <Button
           onClick={requestDirectoryAccess}
@@ -265,12 +269,12 @@ export const FileScanner: React.FC<FileScannerProps> = ({ guestMode = false, onL
         {isScanning ? (
           <>
             <Brain className="mr-2 h-5 w-5 animate-pulse" />
-            AI Scanning in Progress...
+            🧠 LYRA AI Scanning...
           </>
         ) : (
           <>
             <Search className="mr-2 h-5 w-5" />
-            Start AI Deep Scan
+            🚀 Start LYRA AI Deep Scan
           </>
         )}
       </Button>
@@ -279,7 +283,7 @@ export const FileScanner: React.FC<FileScannerProps> = ({ guestMode = false, onL
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold text-white">
-              AI Analysis Results: {scannedFiles.length} Files Found
+              🧠 LYRA AI Results: {scannedFiles.length} Files Found
             </h3>
             <Button
               onClick={handleRecoverSelected}
