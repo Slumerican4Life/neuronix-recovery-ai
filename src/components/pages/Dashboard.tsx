@@ -3,12 +3,12 @@ import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { AdminDashboard } from '@/components/admin/AdminDashboard';
 import { FileScanner } from '@/components/scanner/FileScanner';
-import { RecoveryEngine } from '@/components/recovery/RecoveryEngine';
+import { RealRecoveryEngine } from '@/components/recovery/RealRecoveryEngine';
 import { SubscriptionCard } from '@/components/subscription/SubscriptionCard';
-import { LyraAssistant } from '@/components/ai/LyraAssistant';
+import { MobileLyraAssistant } from '@/components/ai/MobileLyraAssistant';
 import { DashboardHeader } from '@/components/layout/DashboardHeader';
 import { StatsCard } from '@/components/layout/StatsCard';
-import { BackgroundOverlay } from '@/components/layout/BackgroundOverlay';
+import { EnhancedBackgroundOverlay } from '@/components/layout/EnhancedBackgroundOverlay';
 import { Brain } from 'lucide-react';
 import { useUserRole } from '@/hooks/useUserRole';
 
@@ -27,10 +27,15 @@ export const Dashboard: React.FC = () => {
 
   if (roleLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-950 via-purple-950 to-blue-950 flex items-center justify-center">
-        <div className="text-center">
-          <Brain className="h-12 w-12 text-purple-400 animate-pulse mx-auto mb-4" />
-          <div className="text-white">Loading your dashboard...</div>
+      <div className="min-h-screen bg-gradient-to-br from-gray-950 via-purple-950 to-blue-950 flex items-center justify-center relative">
+        <EnhancedBackgroundOverlay />
+        <div className="text-center relative z-10">
+          <img 
+            src="/lovable-uploads/e924ddd2-96a0-4051-a12b-b143448345ee.png" 
+            alt="AI Brain Loading"
+            className="w-16 h-16 mx-auto mb-4 object-contain animate-pulse"
+          />
+          <div className="text-white">Loading your AI recovery dashboard...</div>
         </div>
       </div>
     );
@@ -42,7 +47,7 @@ export const Dashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-950 via-purple-950 to-blue-950 relative overflow-hidden">
-      <BackgroundOverlay />
+      <EnhancedBackgroundOverlay />
       
       <DashboardHeader
         user={user!}
@@ -58,7 +63,7 @@ export const Dashboard: React.FC = () => {
           {/* Left Column - Scanner and Recovery */}
           <div className="lg:col-span-2 space-y-4 sm:space-y-8">
             <FileScanner />
-            <RecoveryEngine />
+            <RealRecoveryEngine />
           </div>
           
           {/* Right Column - Subscription */}
@@ -69,7 +74,7 @@ export const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      <LyraAssistant />
+      <MobileLyraAssistant />
     </div>
   );
 };
