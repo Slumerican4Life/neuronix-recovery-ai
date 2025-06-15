@@ -36,12 +36,14 @@ export const EnhancedBackgroundOverlay: React.FC = () => {
       <div className="absolute inset-0 bg-gradient-to-br from-purple-900/10 via-transparent to-blue-900/10"></div>
       <div className="absolute inset-0 bg-gradient-to-tl from-pink-900/10 via-transparent to-purple-900/10"></div>
 
-      <style jsx>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-20px) rotate(180deg); }
-        }
-      `}</style>
+      <style>
+        {`
+          @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+          }
+        `}
+      </style>
     </>
   );
 };
