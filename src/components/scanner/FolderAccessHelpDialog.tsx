@@ -24,21 +24,21 @@ export const FolderAccessHelpDialog: React.FC = () => (
           To scan your files, you need to grant this app permission to a folder.
         </DialogDescription>
       </DialogHeader>
-      <div className="space-y-3 text-sm text-gray-800">
+      <div className="space-y-3 text-sm text-muted-foreground">
         <ol className="list-decimal list-inside space-y-1">
           <li>
-            Click the <span className="font-semibold">"Choose Folder for AI Analysis..."</span> button.
+            Click the <span className="font-semibold text-white">"Choose Folder for AI Analysis..."</span> button.
           </li>
           <li>
-            In the dialog window that appears, select the folder you wish to scan and click <span className="font-semibold">"Select Folder"</span> or <span className="font-semibold">"Open"</span>.
+            In the dialog window that appears, select the folder you wish to scan and click <span className="font-semibold text-white">"Select Folder"</span> or <span className="font-semibold text-white">"Open"</span>.
           </li>
           <li>
             If prompted, give this site permission to access the folder.
           </li>
         </ol>
         <p className="mt-2">
-          <span className="font-semibold text-purple-600">Tip:</span> If you accidentally denied permission, refresh the page and try again.<br/>
-          <span className="font-semibold text-purple-600">Supported browsers:</span> Chrome, Edge, Brave, and other Chromium browsers.
+          <span className="font-semibold text-purple-400">Tip:</span> If you accidentally denied permission, you may need to reset the site's permissions in your browser settings.<br/>
+          <span className="font-semibold text-purple-400">Supported browsers:</span> Chrome, Edge, Brave, and other Chromium browsers.
         </p>
         <ul className="mt-2 list-disc list-inside">
           <li>
