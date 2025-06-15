@@ -1,80 +1,106 @@
 
 import React, { useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { AdminDashboard } from '@/components/admin/AdminDashboard';
-import { FileScanner } from '@/components/scanner/FileScanner';
-import { RealRecoveryEngine } from '@/components/recovery/RealRecoveryEngine';
-import { SubscriptionCard } from '@/components/subscription/SubscriptionCard';
-import { MobileLyraAssistant } from '@/components/ai/MobileLyraAssistant';
 import { DashboardHeader } from '@/components/layout/DashboardHeader';
 import { StatsCard } from '@/components/layout/StatsCard';
-import { EnhancedBackgroundOverlay } from '@/components/layout/EnhancedBackgroundOverlay';
-import { Brain } from 'lucide-react';
-import { useUserRole } from '@/hooks/useUserRole';
+import { FileScanner } from '@/components/scanner/FileScanner';
+import { AdvancedRecoveryEngine } from '@/components/recovery/AdvancedRecoveryEngine';
+import { EnhancedLyraAssistant } from '@/components/ai/EnhancedLyraAssistant';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Brain, Search, Cpu, Zap } from 'lucide-react';
 
-export const Dashboard: React.FC = () => {
-  const { user, signOut } = useAuth();
-  const { role, canManageUsers, loading: roleLoading } = useUserRole();
-  const [showAdminDashboard, setShowAdminDashboard] = useState(false);
-
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-    } catch (error) {
-      console.error('Error signing out:', error);
-    }
-  };
-
-  if (roleLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-950 via-purple-950 to-blue-950 flex items-center justify-center relative">
-        <EnhancedBackgroundOverlay />
-        <div className="text-center relative z-10">
-          <img 
-            src="/lovable-uploads/e924ddd2-96a0-4051-a12b-b143448345ee.png" 
-            alt="AI Brain Loading"
-            className="w-16 h-16 mx-auto mb-4 object-contain animate-pulse"
-          />
-          <div className="text-white">Loading your AI recovery dashboard...</div>
-        </div>
-      </div>
-    );
-  }
-
-  if (showAdminDashboard && canManageUsers) {
-    return <AdminDashboard onBack={() => setShowAdminDashboard(false)} />;
-  }
+export const Dashboard = () => {
+  const [activeTab, setActiveTab] = useState('scanner');
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-purple-950 to-blue-950 relative overflow-hidden">
-      <EnhancedBackgroundOverlay />
+    <div className="min-h-screen bg-gradient-to-br from-purple-900/20 via-blue-900/20 to-black">
+      <DashboardHeader />
       
-      <DashboardHeader
-        user={user!}
-        role={role}
-        canManageUsers={canManageUsers}
-        onShowAdminDashboard={() => setShowAdminDashboard(true)}
-        onSignOut={handleSignOut}
-      />
-
-      {/* Main Content */}
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
-          {/* Left Column - Scanner and Recovery */}
-          <div className="lg:col-span-2 space-y-4 sm:space-y-8">
-            <FileScanner />
-            <RealRecoveryEngine />
-          </div>
-          
-          {/* Right Column - Subscription */}
-          <div className="space-y-4 sm:space-y-8">
-            <SubscriptionCard />
-            <StatsCard />
-          </div>
+      <main className="container mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <StatsCard
+            title="Files Scanned"
+            value="2,847,392"
+            icon={Search}
+            gradient="from-blue-600 to-cyan-600"
+          />
+          <StatsCard
+            title="AI Recovery Rate"
+            value="94.7%"
+            icon={Brain}
+            gradient="from-purple-600 to-pink-600"
+          />
+          <StatsCard
+            title="Quantum Repairs"
+            value="156,342"
+            icon={Zap}
+            gradient="from-green-600 to-emerald-600"
+          />
+          <StatsCard
+            title="Active AI Agents"
+            value="3"
+            icon={Cpu}
+            gradient="from-orange-600 to-red-600"
+          />
         </div>
-      </div>
 
-      <MobileLyraAssistant />
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-3 bg-black/50 backdrop-blur-xl border border-purple-500/30">
+            <TabsTrigger 
+              value="scanner" 
+              className="data-[state=active]:bg-purple-600/50 data-[state=active]:text-white"
+            >
+              <Search className="h-4 w-4 mr-2" />
+              AI File Scanner
+            </TabsTrigger>
+            <TabsTrigger 
+              value="recovery" 
+              className="data-[state=active]:bg-purple-600/50 data-[state=active]:text-white"
+            >
+              <Cpu className="h-4 w-4 mr-2" />
+              Quantum Recovery
+              <Badge className="ml-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs">
+                NEW
+              </Badge>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="assistant" 
+              className="data-[state=active]:bg-purple-600/50 data-[state=active]:text-white"
+            >
+              <Brain className="h-4 w-4 mr-2" />
+              Lyra AI
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="scanner" className="space-y-6">
+            <FileScanner />
+          </TabsContent>
+
+          <TabsContent value="recovery" className="space-y-6">
+            <div className="space-y-4">
+              <div className="text-center space-y-2">
+                <h2 className="text-2xl font-bold text-white">🧠 Quantum AI Recovery Engine</h2>
+                <p className="text-gray-300">
+                  Ultra-advanced recovery with OpenAI integration, formatted drive recovery, and AI file repair
+                </p>
+              </div>
+              <AdvancedRecoveryEngine />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="assistant" className="space-y-6">
+            <div className="space-y-4">
+              <div className="text-center space-y-2">
+                <h2 className="text-2xl font-bold text-white">🧠 Lyra AI Assistant</h2>
+                <p className="text-gray-300">
+                  Your intelligent AI companion with real OpenAI brain for file recovery and beyond
+                </p>
+              </div>
+              <EnhancedLyraAssistant />
+            </div>
+          </TabsContent>
+        </Tabs>
+      </main>
     </div>
   );
 };

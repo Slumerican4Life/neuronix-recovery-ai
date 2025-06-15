@@ -1,44 +1,45 @@
 
-import React, { useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { useAuth } from '@/contexts/AuthContext';
-import { useCheckout } from '@/hooks/useCheckout';
-import { PlanToggle } from './PlanToggle';
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PricingHeader } from './PricingHeader';
 import { FeaturesList } from './FeaturesList';
 import { SocialProof } from './SocialProof';
 
-export const PricingCard: React.FC = () => {
-  const [isLifetime, setIsLifetime] = useState(true);
-  const { user } = useAuth();
-  const { createCheckoutSession, isLoading } = useCheckout();
+interface PricingCardProps {
+  isLifetime?: boolean;
+  isLoading?: boolean;
+  isLoggedIn?: boolean;
+  onUpgrade?: () => void;
+}
 
-  const handleUpgrade = () => {
-    const priceId = isLifetime 
-      ? 'price_1QXlQ9JNcmPzuSeK2m9rssOy' // Lifetime price ID
-      : 'price_1QXlQ9JNcmPzuSeK2m9rssOy'; // Monthly price ID (update when available)
-    
-    createCheckoutSession(priceId, isLifetime);
-  };
-
+export const PricingCard: React.FC<PricingCardProps> = ({
+  isLifetime = true,
+  isLoading = false,
+  isLoggedIn = false,
+  onUpgrade = () => {}
+}) => {
   return (
-    <Card className="bg-black/50 border-purple-500/40 backdrop-blur-xl relative overflow-hidden">
+    <Card className="bg-black/60 border-purple-500/50 backdrop-blur-xl relative overflow-hidden max-w-md mx-auto">
+      {/* Enhanced visual effects */}
       <div className="absolute inset-0 opacity-30">
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/30 via-blue-900/20 to-pink-900/30"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/40 via-blue-900/30 to-pink-900/40"></div>
+        <div className="absolute inset-0" style={{
+          backgroundImage: `radial-gradient(circle at 25% 25%, #a855f7 0%, transparent 70%), radial-gradient(circle at 75% 75%, #3b82f6 0%, transparent 70%)`,
+          animation: 'pulse 6s ease-in-out infinite'
+        }}></div>
       </div>
 
-      <CardContent className="p-6 relative z-10">
-        <PlanToggle isLifetime={isLifetime} onToggle={setIsLifetime} />
-        
+      <CardHeader className="relative z-10">
         <PricingHeader 
           isLifetime={isLifetime}
-          onUpgrade={handleUpgrade}
           isLoading={isLoading}
-          isLoggedIn={!!user}
+          isLoggedIn={isLoggedIn}
+          onUpgrade={onUpgrade}
         />
-        
-        <FeaturesList />
-        
+      </CardHeader>
+      
+      <CardContent className="space-y-6 relative z-10">
+        <FeaturesList isLifetime={isLifetime} />
         <SocialProof />
       </CardContent>
     </Card>

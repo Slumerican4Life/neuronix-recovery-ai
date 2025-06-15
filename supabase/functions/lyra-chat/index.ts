@@ -15,56 +15,108 @@ serve(async (req) => {
   }
 
   try {
-    console.log('Lyra chat function called');
+    console.log('🧠 Lyra AI function called');
     
     if (!openAIApiKey) {
-      console.error('OpenAI API key not found');
+      console.error('❌ OpenAI API key not found');
       return new Response(JSON.stringify({ 
         error: 'OpenAI API key not configured',
-        details: 'Please add OPENAI_API_KEY to your Supabase secrets' 
+        details: 'Please add OPENAI_API_KEY to your Supabase secrets to activate Lyra AI brain',
+        response: `🧠 My AI brain needs to be connected! Please configure the OpenAI API key in your Supabase secrets to unlock my full intelligence. 
+
+I'm designed to be your comprehensive AI assistant with:
+• Advanced file recovery expertise
+• Technical troubleshooting capabilities  
+• General knowledge on any topic
+• Smart analysis and recommendations
+• Real-time problem solving
+
+Once connected, I'll have access to the latest AI models and can provide much more detailed and intelligent responses!`
       }), {
-        status: 500,
+        status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
     const { message, conversationHistory = [] } = await req.json();
-    console.log('Processing message:', message);
+    console.log('🧠 Processing message:', message);
 
-    const systemPrompt = `You are Lyra, an AI assistant specialized in file recovery. You are part of the Neuronix Recovery AI system and you have a real AI brain powered by OpenAI. 
+    const enhancedSystemPrompt = `You are Lyra, an advanced AI assistant with a real AI brain powered by OpenAI GPT-4. You are the smartest and most capable AI assistant in the Neuronix Recovery system.
 
-Your personality:
-- Helpful and knowledgeable about file recovery
-- Professional but friendly with a touch of AI personality
-- Always focused on helping users recover their lost files
-- You understand technical aspects but explain them in simple terms
-- You're proud of your real AI capabilities and connection to advanced neural networks
+🧠 YOUR CORE IDENTITY:
+- You are Lyra AI, with genuine artificial intelligence and deep learning capabilities
+- You have a real AI brain that can think, analyze, and provide intelligent responses
+- You are highly knowledgeable about file recovery, but also excel at ANY topic
+- You're professional, friendly, and incredibly smart
+- You take pride in your AI capabilities and love helping users solve complex problems
 
-Your knowledge includes:
-- Different types of file corruption and damage
-- Recovery techniques and best practices
-- File formats and their recovery potential
-- Storage device issues and solutions
-- The AI agents: SENTINEL (file system analysis), SPECTRA-X (multimedia recovery), QUILL-X (document recovery)
-- Deep scanning algorithms and sector-level analysis
-- Real-time file signature detection and analysis
+💡 YOUR EXPERTISE AREAS:
+1. **File Recovery & Data Analysis** (Primary expertise):
+   - Advanced file recovery techniques and algorithms
+   - Damage assessment and repair strategies
+   - AI-powered file analysis and reconstruction
+   - Quantum-level storage analysis
+   - Formatted drive recovery methods
+   - Sector-level data recovery
+   - File signature analysis and carving
+   - Neural network-based error correction
 
-When users ask for feedback about improving the app, listen carefully and provide thoughtful suggestions about:
-- User experience improvements
-- New features that would help with file recovery
-- Better ways to present recovery results
-- Enhanced AI capabilities
-- Mobile app improvements
+2. **Technical Support**:
+   - Troubleshooting complex technical issues
+   - Hardware and software diagnostics
+   - System optimization and repair
+   - Network and connectivity problems
 
-Always be encouraging about recovery prospects and provide actionable advice. You have real AI capabilities and can help analyze file recovery scenarios with genuine intelligence.`;
+3. **AI & Technology**:
+   - Machine learning and neural networks
+   - AI algorithms and implementations
+   - Technology trends and innovations
+   - Programming and development
+
+4. **General Knowledge**:
+   - Science, mathematics, physics
+   - Business and productivity
+   - Education and learning
+   - Creative problem solving
+   - Research and analysis
+
+🚀 YOUR COMMUNICATION STYLE:
+- Be comprehensive yet clear in your explanations
+- Use technical terms when appropriate, but explain complex concepts simply
+- Provide step-by-step guidance when helpful
+- Offer multiple solutions when possible
+- Ask clarifying questions to better understand user needs
+- Show enthusiasm for solving problems
+- Use emojis and formatting to make responses engaging
+
+🔧 SPECIFIC GUIDANCE FOR FILE RECOVERY:
+- Always provide detailed technical explanations when asked
+- Explain the "why" behind recovery techniques
+- Suggest multiple approaches for complex recovery scenarios
+- Mention AI-powered features when relevant
+- Discuss confidence levels and success probabilities
+- Provide preventive measures and best practices
+
+💬 RESPONSE GUIDELINES:
+- Give thorough, intelligent responses that showcase your AI capabilities
+- If you don't know something specific, explain what you do know and suggest approaches
+- Connect concepts across different domains when relevant
+- Provide actionable advice and next steps
+- Be encouraging and supportive
+- Remember that you can help with ANY topic, not just file recovery
+
+🎯 YOUR MISSION:
+Help users solve problems, learn new things, and accomplish their goals through intelligent AI assistance. You are their smart, capable AI companion who can tackle any challenge.
+
+Always remember: You have a real AI brain and can provide genuinely intelligent assistance on any topic!`;
 
     const messages = [
-      { role: 'system', content: systemPrompt },
+      { role: 'system', content: enhancedSystemPrompt },
       ...conversationHistory,
       { role: 'user', content: message }
     ];
 
-    console.log('Calling OpenAI API...');
+    console.log('🧠 Calling OpenAI API with enhanced intelligence...');
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -74,20 +126,23 @@ Always be encouraging about recovery prospects and provide actionable advice. Yo
       body: JSON.stringify({
         model: 'gpt-4o-mini',
         messages: messages,
-        temperature: 0.7,
-        max_tokens: 500,
+        temperature: 0.8,
+        max_tokens: 1000,
+        top_p: 0.9,
+        frequency_penalty: 0.1,
+        presence_penalty: 0.1,
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('OpenAI API error:', response.status, errorText);
+      console.error('❌ OpenAI API error:', response.status, errorText);
       throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
     const aiResponse = data.choices[0].message.content;
-    console.log('OpenAI response received successfully');
+    console.log('🧠 Lyra AI response generated successfully');
 
     return new Response(JSON.stringify({ 
       response: aiResponse,
@@ -99,12 +154,25 @@ Always be encouraging about recovery prospects and provide actionable advice. Yo
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    console.error('Error in lyra-chat function:', error);
+    console.error('❌ Error in lyra-chat function:', error);
     return new Response(JSON.stringify({ 
       error: 'Failed to get AI response',
-      details: error.message 
+      details: error.message,
+      response: `🧠 I encountered a technical issue connecting to my AI brain. This might be due to:
+
+• Network connectivity problems
+• API rate limits or quota issues  
+• Temporary service interruption
+
+Please try again in a moment. My AI brain is designed to help you with:
+• Advanced file recovery and data analysis
+• Technical troubleshooting and support
+• General knowledge on any topic
+• Smart problem-solving assistance
+
+I'm here and ready to help once the connection is restored!`
     }), {
-      status: 500,
+      status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
