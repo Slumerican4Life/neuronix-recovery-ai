@@ -1,4 +1,5 @@
 
+
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
@@ -15,11 +16,16 @@ serve(async (req) => {
   try {
     console.log('🧠 Lyra AI function called');
     
-    const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+    // Check multiple possible secret names for the OpenAI API key
+    const openAIApiKey = Deno.env.get('OPENAI_API_KEY') || 
+                         Deno.env.get('lyra-file-recovery-open-ai-api-key') ||
+                         Deno.env.get('lyra_neuronix_fiole_recogvery');
+    
     console.log('🔑 API Key check:', openAIApiKey ? 'Found' : 'Missing');
+    console.log('🔍 Checking secrets: OPENAI_API_KEY, lyra-file-recovery-open-ai-api-key, lyra_neuronix_fiole_recogvery');
     
     if (!openAIApiKey) {
-      console.error('❌ OpenAI API key not found in environment');
+      console.error('❌ OpenAI API key not found in any expected environment variables');
       return new Response(JSON.stringify({ 
         error: 'OpenAI API key not configured',
         details: 'The OPENAI_API_KEY secret is not set in Supabase',
@@ -179,3 +185,4 @@ I'm here and ready to help once the connection is restored!`
     });
   }
 });
+
