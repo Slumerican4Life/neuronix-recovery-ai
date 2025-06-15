@@ -12,6 +12,7 @@ import { useDirectoryAccess } from '@/hooks/useDirectoryAccess';
 import { detectFileType, getAgentForFile } from '@/utils/fileTypeDetection';
 import { generateThumbnail } from '@/utils/thumbnailGenerator';
 import { FolderAccessHelpDialog } from "./FolderAccessHelpDialog";
+import { Badge } from '@/components/ui/badge';
 
 // New: Prepare dummy/sample scan data
 const DEMO_FILES = [
