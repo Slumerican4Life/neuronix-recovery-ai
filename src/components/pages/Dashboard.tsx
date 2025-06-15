@@ -12,9 +12,28 @@ import { Brain, Search, Cpu, Zap } from 'lucide-react';
 export const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('scanner');
 
+  // Mock user data for now - you can replace this with real auth data later
+  const mockUser = {
+    email: 'user@example.com',
+    user_metadata: { full_name: 'Demo User' }
+  };
+
+  const handleSignOut = () => {
+    console.log('Sign out clicked');
+  };
+
+  const handleShowAdminDashboard = () => {
+    console.log('Admin dashboard clicked');
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900/20 via-blue-900/20 to-black">
-      <DashboardHeader />
+      <DashboardHeader 
+        user={mockUser}
+        canManageUsers={false}
+        onShowAdminDashboard={handleShowAdminDashboard}
+        onSignOut={handleSignOut}
+      />
       
       <main className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
