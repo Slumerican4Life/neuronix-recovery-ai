@@ -1,8 +1,7 @@
 
 import React, { useState } from 'react';
 import { AuthForm } from '@/components/auth/AuthForm';
-import { FileScanner } from '@/components/scanner/FileScanner';
-import { LyraAssistant } from '@/components/ai/LyraAssistant';
+import { RealRecoveryEngine } from '@/components/recovery/RealRecoveryEngine';
 import { BackgroundOverlay } from '@/components/layout/BackgroundOverlay';
 import { Button } from '@/components/ui/button';
 import { Brain, Zap } from 'lucide-react';
@@ -51,58 +50,63 @@ export const GuestScanner: React.FC = () => {
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
         <div className="text-center mb-8">
           <h2 className="text-3xl font-bold text-white mb-4">
-            Recover Your Lost Files with AI Power
+            Experience the Most Powerful Recovery Engine
           </h2>
           <p className="text-gray-300 text-lg">
-            Advanced neural network technology finds and recovers files others can't. 
-            <span className="text-purple-400 font-semibold"> Scan for free - pay only if we find your files!</span>
+            Our Quantum AI Engine performs a deep-level scan to find files other tools miss. 
+            <span className="text-purple-400 font-semibold"> Start your free simulated scan below!</span>
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
           <div className="lg:col-span-2">
-            <FileScanner guestMode={true} onLoginRequired={() => setShowAuthForm(true)} />
+            <RealRecoveryEngine />
           </div>
           
           <div className="space-y-6">
             {/* Free Trial Info */}
             <div className="bg-black/40 border border-green-500/30 backdrop-blur-xl rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-green-400 mb-4">Free Trial Benefits</h3>
+              <h3 className="text-lg font-semibold text-green-400 mb-4">Free Trial Features</h3>
               <ul className="space-y-2 text-gray-300">
                 <li className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                  Unlimited scanning
+                  Simulated Quantum Deep Scan
                 </li>
                 <li className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                  5 free file recoveries
+                  AI-powered file analysis
                 </li>
                 <li className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                  Full file preview
+                  Simulated recovery of found files
                 </li>
                 <li className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                  AI file repair
+                  Sign up to scan your own devices
                 </li>
               </ul>
             </div>
 
             {/* Pricing */}
             <div className="bg-black/40 border border-purple-500/30 backdrop-blur-xl rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-purple-400 mb-4">Unlimited Recovery</h3>
+              <h3 className="text-lg font-semibold text-purple-400 mb-4">Unlock Full Power</h3>
               <div className="text-center">
                 <div className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent mb-2">
                   $9.99/month
                 </div>
                 <p className="text-gray-400 text-sm">Cancel anytime</p>
+                <Button
+                  onClick={() => setShowAuthForm(true)}
+                  className="w-full mt-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                >
+                  Sign Up & Scan for Real
+                </Button>
               </div>
             </div>
           </div>
         </div>
       </div>
-
-      <LyraAssistant />
     </div>
   );
 };
+
