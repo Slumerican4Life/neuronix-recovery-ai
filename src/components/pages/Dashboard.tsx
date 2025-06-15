@@ -5,9 +5,11 @@ import { StatsCard } from '@/components/layout/StatsCard';
 import { FileScanner } from '@/components/scanner/FileScanner';
 import { AdvancedRecoveryEngine } from '@/components/recovery/AdvancedRecoveryEngine';
 import { EnhancedLyraAssistant } from '@/components/ai/EnhancedLyraAssistant';
+import { FeedbackSystem } from '@/components/ai/FeedbackSystem';
+import { LyraConnector } from '@/components/ai/LyraConnector';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Brain, Search, Cpu, Zap } from 'lucide-react';
+import { Brain, Search, Cpu, Zap, MessageSquare } from 'lucide-react';
 
 export const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('scanner');
@@ -64,7 +66,7 @@ export const Dashboard = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 bg-black/50 backdrop-blur-xl border border-purple-500/30">
+          <TabsList className="grid w-full grid-cols-4 bg-black/50 backdrop-blur-xl border border-purple-500/30">
             <TabsTrigger 
               value="scanner" 
               className="data-[state=active]:bg-purple-600/50 data-[state=active]:text-white"
@@ -88,6 +90,16 @@ export const Dashboard = () => {
             >
               <Brain className="h-4 w-4 mr-2" />
               Lyra AI
+            </TabsTrigger>
+            <TabsTrigger 
+              value="feedback" 
+              className="data-[state=active]:bg-purple-600/50 data-[state=active]:text-white"
+            >
+              <MessageSquare className="h-4 w-4 mr-2" />
+              Feedback
+              <Badge className="ml-2 bg-gradient-to-r from-green-500 to-blue-500 text-white text-xs">
+                NEW
+              </Badge>
             </TabsTrigger>
           </TabsList>
 
@@ -115,7 +127,20 @@ export const Dashboard = () => {
                   Your intelligent AI companion with real OpenAI brain for file recovery and beyond
                 </p>
               </div>
+              <LyraConnector />
               <EnhancedLyraAssistant />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="feedback" className="space-y-6">
+            <div className="space-y-4">
+              <div className="text-center space-y-2">
+                <h2 className="text-2xl font-bold text-white">💡 Help Us Improve</h2>
+                <p className="text-gray-300">
+                  Share your suggestions with Lyra AI - she'll analyze them with her OpenAI brain
+                </p>
+              </div>
+              <FeedbackSystem />
             </div>
           </TabsContent>
         </Tabs>
