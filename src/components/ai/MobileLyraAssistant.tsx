@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -20,7 +19,7 @@ export const MobileLyraAssistant: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      text: "Hi! I'm Lyra, your AI recovery assistant. I'm connected to OpenAI and ready to help you with real file recovery. Ask me anything about the deep scan process or file recovery techniques!",
+      text: "🧠 Hi! I'm Lyra, your AI recovery assistant with real OpenAI integration! I'm now connected to my AI brain and ready to provide intelligent file recovery assistance. Ask me anything about recovery techniques or technical support!",
       isUser: false,
       timestamp: new Date()
     }
@@ -48,7 +47,8 @@ export const MobileLyraAssistant: React.FC = () => {
 
   const sendToLyraAI = async (message: string) => {
     try {
-      console.log('Sending message to Lyra AI:', message);
+      console.log('🧠 Mobile: Sending message to Lyra AI:', message);
+      
       const { data, error } = await supabase.functions.invoke('lyra-chat', {
         body: {
           message,
@@ -57,16 +57,20 @@ export const MobileLyraAssistant: React.FC = () => {
       });
 
       if (error) {
-        console.error('Supabase function error:', error);
+        console.error('🔴 Mobile: Supabase function error:', error);
         throw error;
       }
 
-      console.log('Lyra AI response:', data);
-      setConversationHistory(data.conversationHistory || []);
-      return data.response;
+      console.log('🧠 Mobile: Lyra AI response received:', data);
+      
+      if (data.conversationHistory) {
+        setConversationHistory(data.conversationHistory);
+      }
+      
+      return data.response || "I'm here to help with my AI brain!";
     } catch (error) {
-      console.error('Error calling Lyra AI:', error);
-      return "I'm having trouble connecting to my AI brain right now, but I'm still here to help! The deep recovery scan is working with real AI analysis. Try asking me about file recovery techniques or how the scanning process works.";
+      console.error('🔴 Mobile: Error calling Lyra AI:', error);
+      return "🧠 I'm having trouble connecting to my AI brain right now. Please check that the OpenAI API key is configured in Supabase secrets. I'm designed to provide intelligent file recovery assistance!";
     }
   };
 

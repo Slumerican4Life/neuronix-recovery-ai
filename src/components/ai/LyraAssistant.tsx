@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Brain, MessageCircle, X, Minimize2, Maximize2 } from 'lucide-react';
 import { FeedbackDialog } from './FeedbackDialog';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Message {
   id: string;
@@ -18,7 +19,7 @@ export const LyraAssistant: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      text: "Hi! I'm Lyra, your AI recovery assistant. I'm here to guide you through the file recovery process and answer any questions you might have about recovering your lost files.",
+      text: "🧠 Hi! I'm Lyra, your AI recovery assistant with real OpenAI integration! I'm now connected to my AI brain and ready to help you with advanced file recovery, technical support, and any questions you might have. My intelligence is powered by GPT-4o-mini!",
       isUser: false,
       timestamp: new Date()
     }
@@ -45,32 +46,30 @@ export const LyraAssistant: React.FC = () => {
 
   const sendToLyraAI = async (message: string) => {
     try {
-      const response = await fetch('https://dvpeahnehnvofjzozmng.functions.supabase.co/lyra-chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      console.log('🧠 Sending message to Lyra AI:', message);
+      
+      const { data, error } = await supabase.functions.invoke('lyra-chat', {
+        body: {
           message,
           conversationHistory
-        }),
+        }
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      if (error) {
+        console.error('🔴 Supabase function error:', error);
+        throw error;
       }
 
-      const data = await response.json();
+      console.log('🧠 Lyra AI response received:', data);
       
-      if (data.error) {
-        throw new Error(data.error);
+      if (data.conversationHistory) {
+        setConversationHistory(data.conversationHistory);
       }
-
-      setConversationHistory(data.conversationHistory || []);
-      return data.response;
+      
+      return data.response || "I'm here to help! My AI brain is working on your request.";
     } catch (error) {
-      console.error('Error calling Lyra AI:', error);
-      return "I'm sorry, I'm having trouble connecting to my AI brain right now. Please try again in a moment, or feel free to ask me anything about file recovery!";
+      console.error('🔴 Error calling Lyra AI:', error);
+      return "🧠 I'm having a moment connecting to my AI brain, but I'm still here to help! This could be due to API configuration. Please check that the OpenAI API key is properly set in Supabase secrets. I'm designed to provide intelligent file recovery assistance once connected!";
     }
   };
 
@@ -135,7 +134,7 @@ export const LyraAssistant: React.FC = () => {
         >
           <div className="relative">
             <Brain className="h-6 w-6 text-white" />
-            <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-400 rounded-full animate-pulse"></div>
+            <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
           </div>
         </Button>
       </div>
@@ -152,11 +151,11 @@ export const LyraAssistant: React.FC = () => {
           <div className="flex items-center gap-2">
             <div className="relative">
               <Brain className="h-5 w-5 text-purple-400" />
-              <div className="absolute -top-1 -right-1 w-2 h-2 bg-green-400 rounded-full"></div>
+              <div className="absolute -top-1 -right-1 w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
             </div>
             <div>
               <h3 className="text-white font-semibold text-sm">Lyra AI</h3>
-              <p className="text-gray-400 text-xs">Recovery Assistant</p>
+              <p className="text-gray-400 text-xs">OpenAI Connected</p>
             </div>
           </div>
           
