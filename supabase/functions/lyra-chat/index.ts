@@ -2,8 +2,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
-
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -17,12 +15,15 @@ serve(async (req) => {
   try {
     console.log('🧠 Lyra AI function called');
     
+    const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+    console.log('🔑 API Key check:', openAIApiKey ? 'Found' : 'Missing');
+    
     if (!openAIApiKey) {
-      console.error('❌ OpenAI API key not found');
+      console.error('❌ OpenAI API key not found in environment');
       return new Response(JSON.stringify({ 
         error: 'OpenAI API key not configured',
-        details: 'Please add OPENAI_API_KEY to your Supabase secrets to activate Lyra AI brain',
-        response: `🧠 My AI brain needs to be connected! Please configure the OpenAI API key in your Supabase secrets to unlock my full intelligence. 
+        details: 'The OPENAI_API_KEY secret is not set in Supabase',
+        response: `🧠 My AI brain needs to be connected! The OpenAI API key is not properly configured in your Supabase secrets. Please check that you've added the OPENAI_API_KEY secret correctly.
 
 I'm designed to be your comprehensive AI assistant with:
 • Advanced file recovery expertise
@@ -31,7 +32,7 @@ I'm designed to be your comprehensive AI assistant with:
 • Smart analysis and recommendations
 • Real-time problem solving
 
-Once connected, I'll have access to the latest AI models and can provide much more detailed and intelligent responses!`
+Once the API key is properly configured, I'll have access to the latest AI models!`
       }), {
         status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -41,7 +42,7 @@ Once connected, I'll have access to the latest AI models and can provide much mo
     const { message, conversationHistory = [] } = await req.json();
     console.log('🧠 Processing message:', message);
 
-    const enhancedSystemPrompt = `You are Lyra, an advanced AI assistant with a real AI brain powered by OpenAI GPT-4. You are the smartest and most capable AI assistant in the Neuronix Recovery system.
+    const enhancedSystemPrompt = `You are Lyra, an advanced AI assistant with a real AI brain powered by OpenAI. You are the smartest and most capable AI assistant in the Neuronix Recovery system.
 
 🧠 YOUR CORE IDENTITY:
 - You are Lyra AI, with genuine artificial intelligence and deep learning capabilities
@@ -158,10 +159,11 @@ Always remember: You have a real AI brain and can provide genuinely intelligent 
     return new Response(JSON.stringify({ 
       error: 'Failed to get AI response',
       details: error.message,
-      response: `🧠 I encountered a technical issue connecting to my AI brain. This might be due to:
+      response: `🧠 I encountered a technical issue connecting to my AI brain. Error: ${error.message}
 
+This might be due to:
+• OpenAI API key issues or rate limits
 • Network connectivity problems
-• API rate limits or quota issues  
 • Temporary service interruption
 
 Please try again in a moment. My AI brain is designed to help you with:
