@@ -1,8 +1,7 @@
-
 import React from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Help } from "lucide-react";
+import { help, Icon } from "lucide-react";
 
 export const FolderAccessHelpDialog: React.FC = () => (
   <Dialog>
@@ -13,7 +12,7 @@ export const FolderAccessHelpDialog: React.FC = () => (
         className="ml-2 text-purple-400 hover:text-purple-300 flex items-center gap-1"
         aria-label="Help with Folder Access"
       >
-        <Help className="h-4 w-4" />
+        <Icon iconNode={help} className="h-4 w-4" />
         Help
       </Button>
     </DialogTrigger>
