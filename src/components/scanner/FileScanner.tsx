@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Search, FileX, AlertTriangle, FolderOpen, Brain } from 'lucide-react';
@@ -12,6 +11,7 @@ import { useFileAnalysis } from '@/hooks/useFileAnalysis';
 import { useDirectoryAccess } from '@/hooks/useDirectoryAccess';
 import { detectFileType, getAgentForFile } from '@/utils/fileTypeDetection';
 import { generateThumbnail } from '@/utils/thumbnailGenerator';
+import { FolderAccessHelpDialog } from "./FolderAccessHelpDialog";
 
 interface FileScannerProps {
   guestMode?: boolean;
@@ -244,13 +244,14 @@ export const FileScanner: React.FC<FileScannerProps> = ({ guestMode = false, onL
         <div className="flex items-center gap-2 text-white font-medium">
           <FolderOpen className="h-4 w-4 text-blue-400" />
           Select Folder for LYRA AI Deep Scan
+          <FolderAccessHelpDialog />
         </div>
         <Button
           onClick={requestDirectoryAccess}
           variant="outline"
           className="w-full bg-black/60 border-gray-600 text-white hover:bg-gray-800"
         >
-          {selectedFolder ? `Selected: ${selectedFolder}` : 'Choose Folder for AI Analysis...'}
+          {selectedFolder ? `Selected: ${selectedFolder}` : "Choose Folder for AI Analysis..."}
         </Button>
       </div>
 
